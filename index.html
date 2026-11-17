@@ -1,201 +1,1086 @@
-<!DOCTYPE html><html lang="ur"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - Chapter Wise</title>
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF Book Assembler PRO - Professional Edition</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-<style>body{font-family:Inter,sans-serif}.card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:16px}
+<style>
+body{font-family:Inter,system-ui,sans-serif}
+.card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:16px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.chapterRow{border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#f8fafc}.chapterRow.done{border-color:#22c55e;background:#f0fdf4}.chapterRow.active{border-color:#4f46e5;background:#eef2ff}
+.chapterRow{border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#f8fafc;transition:all .2s}
+.chapterRow.done{border-color:#22c55e;background:#f0fdf4}
+.chapterRow.active{border-color:#4f46e5;background:#eef2ff}
 .chapNum{width:44px;height:44px;min-width:44px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#a855f7);color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center}
 #fileList{max-height:640px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
-.flexBox{resize:vertical;overflow:auto;min-height:160px;height:160px;max-height:560px}.flexBox.big{height:560px !important}
-.chapSpin{display:inline-block;font-size:22px;min-width:28px;text-align:center;opacity:0.35}.chapSpin.spinning{opacity:1;animation:spin 0.8s linear infinite}.chapSpin.done{opacity:1}
-#transSpin{display:inline-block;font-size:18px;opacity:0.3}#transSpin.spinning{opacity:1;animation:spin 0.8s linear infinite}
-</style></head>
+.flexBox{resize:vertical;overflow:auto;min-height:160px;height:160px;max-height:560px}
+.flexBox.big{height:560px !important}
+.chapSpin{display:inline-block;font-size:22px;min-width:28px;text-align:center;opacity:0.35}
+.chapSpin.spinning{opacity:1;animation:spin 0.8s linear infinite}
+.chapSpin.done{opacity:1}
+#transSpin{display:inline-block;font-size:18px;opacity:0.3}
+#transSpin.spinning{opacity:1;animation:spin 0.8s linear infinite}
+.rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu','Amiri',Georgia,serif}
+.ltr-text{direction:ltr;text-align:left}
+</style>
+</head>
 <body class="bg-slate-100 min-h-screen">
-<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10"><div class="max-w-6xl mx-auto flex justify-between items-center"><div><h1 class="text-xl font-extrabold" data-i18n="appTitle">📚 PDF Book Assembler PRO</h1><p class="text-xs opacity-90">V23 Hang Fixed + Chapter-wise OCR Wapas</p></div><div class="flex items-center gap-2"><label class="text-xs" data-i18n="websiteLang">Website Language:</label><select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1"><option value="roman">Roman Urdu</option><option value="ur">Urdu</option><option value="en">English</option><option value="ar">Arabic</option><option value="hi">Hindi</option><option value="ps">Pashto</option><option value="fa">Persian</option><option value="tr">Turkish</option><option value="fr">French</option><option value="de">German</option><option value="es">Spanish</option></select><span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V24 ✓</span></div></div></header>
+<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10">
+<div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
+<div>
+<h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1>
+<p class="text-xs opacity-90">V25 Professional — Exact Pages + Exact Lines + Perfect Justify</p>
+</div>
+<div class="flex items-center gap-2">
+<label class="text-xs">Website Language:</label>
+<select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1">
+<option value="roman">Roman Urdu</option>
+<option value="ur">اردو</option>
+<option value="en">English</option>
+</select>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V25 ✓</span>
+</div>
+</div>
+</header>
+
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
-<div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm"><b>✅ PRO V24:</b> <b>FIXED:</b> (1) Urdu/Arabic PDF me ab <b>???? nahi</b> aayega - asal Urdu font embed hoga. (2) Translated ke <b>pages = Original ke pages</b>, har page ki <b>lines = Original page ki lines</b>. (3) Header/Footer + Page Numbers OCR se <b>auto-remove</b>. (4) Translated page par <b>koi page number nahi</b>. (5) Har line <b>JUSTIFY</b> - dono taraf barabar.</div>
-<div class="bg-white rounded-xl p-3 border flex flex-wrap gap-3 items-center text-sm"><b>Settings:</b><label>OCR Language: <select id="ocrLang" class="border rounded px-2 py-1"><option value="urd">Urdu Only (BEST)</option><option value="eng">English Only</option><option value="urd+eng">Urdu + English (Mixed)</option><option value="ara">Arabic</option><option value="hin">Hindi</option></select></label><label>OCR Quality: <select id="ocrQuality" class="border rounded px-2 py-1"><option value="2">High - 2.0</option><option value="1.5">Medium - 1.5</option><option value="1.2">Fast - 1.2</option></select></label><label>Preview: <select id="previewLen" class="border rounded px-2 py-1"><option value="0" selected>NO LIMIT - Full</option><option value="1500">1500 haroof</option><option value="5000">5000 haroof</option></select></label><label><input type="checkbox" id="pageWise" checked> Page-Wise Translation - Original page ka translate usi order me</label></div>
-<div class="card"><h2 class="font-bold" data-i18n="chaptersTitle">1️⃣ Chapters Add Karein</h2><p class="text-xs text-slate-500">Tip: Files ko naam dein - 01-Chapter1.pdf, 02-Chapter2.pdf</p><input id="pdfInput" type="file" accept="application/pdf" multiple class="w-full border p-2 rounded mt-2"><div class="flex gap-2 mt-2 text-xs"><button data-i18n="sortBtn" onclick="sortByName()" class="bg-slate-200 px-3 py-1 rounded font-bold">🔤 Naam Se Tarteeb</button><button data-i18n="clearBtn" onclick="clearAll()" class="bg-red-100 px-3 py-1 rounded font-bold">🗑️ Sab Clear</button><button onclick="testChapterSpinners()" class="bg-pink-100 px-3 py-1 rounded font-bold">⟳ Spinner Test (Har Chapter Ke Samne Ghoomega)</button><button onclick="resetHang()" class="bg-red-500 text-white px-3 py-1 rounded font-bold">🔄 Hang Reset - Sab Wapas Chalu Karo</button></div><div id="fileList" class="mt-3 space-y-2"></div><div id="tocPreview" class="hidden mt-3 bg-indigo-50 p-3 rounded"><b>📑 TOC Preview:</b><div id="tocList" class="text-sm mt-1"></div></div></div>
-<div class="grid md:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold" data-i18n="ocrTitle">2️⃣ FULL OCR</h2><button data-i18n="ocrBtn" onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2">🔍 Sab Chapters Ka FULL OCR Karo</button><button data-i18n="textBtn" onclick="extractAllText()" class="w-full bg-slate-800 text-white py-2 rounded-xl font-bold mt-2 text-sm">📄 Sirf Text Nikalo (Fast)</button><div id="ocrStatus" class="text-sm mt-2 bg-slate-50 p-2 rounded">Abhi OCR nahi hua.</div><div class="flex justify-between items-center mt-2"><span class="text-xs font-bold">OCR Text - 1 Page Jaisa</span><button onclick="toggleBoxSize('ocrText')" class="bg-slate-200 px-2 py-1 rounded text-xs font-bold">Bara / Chhota</button></div><textarea id="ocrText" class="flexBox w-full border p-2 rounded h-40 mt-1"></textarea></div>
-<div class="card"><h2 class="font-bold" data-i18n="bookTitle">3️⃣ Book Banao & Translate</h2><label class="text-sm">Book Ka Naam</label><input id="bookName" value="Meri Book" class="w-full border p-2 rounded mb-2"><label class="text-sm">Book Author (Optional)</label><input id="bookAuthor" placeholder="Masalan: Muhammad Shahid" class="w-full border p-2 rounded mb-2"><label class="text-sm">Book Cover Image (Optional)</label><input id="bookCover" type="file" accept="image/*" class="w-full border p-2 rounded mb-1"><div id="bookCoverPreview" class="text-xs text-slate-500 mb-2">Koi cover nahi - Sirf text se banega.</div><label class="text-sm">Language</label><select id="targetLang" onchange="translatePreview();fixContentDir();" class="w-full border p-2 rounded mb-2"><option value="original">Original (No Translate)</option><option value="ur">Urdu</option><option value="en">English</option><option value="roman">Roman Urdu</option><option value="ar">Arabic</option><option value="hi">Hindi</option><option value="ps">Pashto</option><option value="fa">Persian</option><option value="tr">Turkish</option><option value="fr">French</option><option value="de">German</option><option value="es">Spanish</option><option value="bn">Bengali</option><option value="zh">Chinese</option><option value="ru">Russian</option></select><label class="text-sm">Book Layout</label><select id="bookLayout" class="w-full border p-2 rounded mb-2"><option value="beautiful">Beautiful - Flowing, Full Pages (Recommended)</option><option value="simple">Simple</option></select><label class="text-sm">Style</label><select id="bookMode" class="w-full border p-2 rounded mb-3"><option value="both">⭐ PRO: Original + Translated (Best)</option><option value="translated">Translated Text Wali Book</option><option value="original">Sirf Original Pages (Fast)</option></select><button data-i18n="makeBtn" onclick="makeBook()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">📖 PRO Book Banao & Download Karo</button><div id="status" class="text-sm mt-3 bg-slate-50 p-2 rounded">Ready hai. Animation har chapter ke samne dekho.</div><div id="downloadArea"></div></div></div>
-<div class="card !border-2 !border-emerald-300"><h2 class="font-bold">Translation Preview - Pehle Check Karein, Phir Book Banayein <span id="transSpin" title="Translation ho rahi hai to ye ghoomega">⟳</span> <span id="transSpinLabel" class="text-xs font-normal text-slate-500"></span></h2><p class="text-xs text-slate-500">Translated box OCR box jitna hai - 1 page jaisa, Prev/Next se page badlo. Poora lamba nahi khulega.</p><div class="flex flex-wrap gap-2 mt-2 items-center text-xs"><b>View:</b><button id="viewTransBtn" onclick="setPreviewView('translated')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold">Sirf Translated - Default</button><button id="viewBothBtn" onclick="setPreviewView('both')" class="bg-slate-200 px-3 py-1.5 rounded-full font-bold">Dono Sath (Compare)</button><button id="viewOrigBtn" onclick="setPreviewView('original')" class="bg-slate-200 px-3 py-1.5 rounded-full font-bold">Sirf Original</button><span class="ml-2">Page: <button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-1 rounded font-bold">◀ Prev</button> <span id="previewPageLabel">Page 1 / 1</span> <span id="ocrPageLabel" class="text-emerald-700 font-bold"></span> <button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-1 rounded font-bold">Next ▶</button></span></div><div id="previewGrid" class="grid md:grid-cols-1 gap-3 mt-2"><div id="origPreviewWrap" class="hidden"><label class="text-xs font-bold">ORIGINAL Text (OCR wala)</label><textarea id="ocrTextPreview" class="flexBox w-full border p-2 rounded h-40 mt-1" readonly></textarea></div><div id="transPreviewWrap"><div class="flex justify-between items-center"><label class="text-xs font-bold">TRANSLATED - OCR Box Jitna</label><button onclick="toggleBoxSize('translatedBookView')" class="bg-emerald-100 px-2 py-1 rounded text-xs font-bold">Bara / Chhota</button></div><div id="translatedBookView" class="flexBox w-full border p-3 rounded mt-1 bg-white text-[15px] leading-7 whitespace-pre-wrap" style="font-family:Georgia,serif"></div><textarea id="translatedPreview" class="hidden" readonly></textarea></div></div><div class="flex gap-2 mt-2"><button onclick="translatePreview()" class="flex-1 bg-emerald-600 text-white py-2 rounded-xl font-bold">Translate Preview Dekho - Page-Wise</button><button onclick="swapPreview()" class="bg-slate-200 px-3 py-2 rounded-xl font-bold text-sm">Swap Languages</button></div><p id="previewInfo" class="text-xs mt-1 text-slate-500"></p></div>
-<div class="text-center text-xs text-gray-500 pb-6">Made with ❤️ by pdfassembler | PRO V24</div>
+
+<div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
+<b>✅ PRO V25 — Professional Fixes:</b>
+<ul class="list-disc ml-5 mt-1 space-y-1">
+<li><b>Exact Page Match:</b> Translated pages = Original pages (never more/less)</li>
+<li><b>Exact Line Match:</b> Each translated page has exactly same number of lines as original</li>
+<li><b>True Justification:</b> Text aligned on BOTH sides (left + right) — beautiful & professional</li>
+<li><b>Header/Footer Removed:</b> Page numbers, running headers, footers auto-detected & removed</li>
+<li><b>No Page Numbers:</b> Translated pages contain clean text only — no page numbers added</li>
+<li><b>Proper Urdu Font:</b> Noto Nastaliq Urdu embedded — no more "????" boxes</li>
+<li><b>Word Preservation:</b> No text loss during line matching algorithm</li>
+</ul>
+</div>
+
+<div class="bg-white rounded-xl p-3 border flex flex-wrap gap-3 items-center text-sm">
+<b>Settings:</b>
+<label>OCR Language: 
+<select id="ocrLang" class="border rounded px-2 py-1">
+<option value="urd">Urdu Only (BEST)</option>
+<option value="eng">English Only</option>
+<option value="urd+eng">Urdu + English (Mixed)</option>
+<option value="ara">Arabic</option>
+<option value="hin">Hindi</option>
+</select>
+</label>
+<label>OCR Quality: 
+<select id="ocrQuality" class="border rounded px-2 py-1">
+<option value="2">High - 2.0</option>
+<option value="1.5">Medium - 1.5</option>
+<option value="1.2">Fast - 1.2</option>
+</select>
+</label>
+<label>Preview: 
+<select id="previewLen" class="border rounded px-2 py-1">
+<option value="0" selected>NO LIMIT - Full</option>
+<option value="1500">1500 haroof</option>
+<option value="5000">5000 haroof</option>
+</select>
+</label>
+<label><input type="checkbox" id="pageWise" checked> Page-Wise Translation (Recommended)</label>
+</div>
+
+<div class="card">
+<h2 class="font-bold">1️⃣ Chapters Add Karein</h2>
+<p class="text-xs text-slate-500">Tip: Files ko naam dein — 01-Chapter1.pdf, 02-Chapter2.pdf</p>
+<input id="pdfInput" type="file" accept="application/pdf" multiple class="w-full border p-2 rounded mt-2">
+<div class="flex gap-2 mt-2 text-xs flex-wrap">
+<button onclick="sortByName()" class="bg-slate-200 px-3 py-1 rounded font-bold">🔤 Naam Se Tarteeb</button>
+<button onclick="clearAll()" class="bg-red-100 px-3 py-1 rounded font-bold">🗑️ Sab Clear</button>
+<button onclick="resetHang()" class="bg-red-500 text-white px-3 py-1 rounded font-bold">🔄 Hang Reset</button>
+</div>
+<div id="fileList" class="mt-3 space-y-2"></div>
+<div id="tocPreview" class="hidden mt-3 bg-indigo-50 p-3 rounded">
+<b>📑 TOC Preview:</b>
+<div id="tocList" class="text-sm mt-1"></div>
+</div>
+</div>
+
+<div class="grid md:grid-cols-2 gap-4">
+<div class="card">
+<h2 class="font-bold">2️⃣ FULL OCR</h2>
+<button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2">🔍 Sab Chapters Ka FULL OCR Karo</button>
+<button onclick="extractAllText()" class="w-full bg-slate-800 text-white py-2 rounded-xl font-bold mt-2 text-sm">📄 Sirf Text Nikalo (Fast)</button>
+<div id="ocrStatus" class="text-sm mt-2 bg-slate-50 p-2 rounded">Abhi OCR nahi hua.</div>
+<div class="flex justify-between items-center mt-2">
+<span class="text-xs font-bold">OCR Text — 1 Page Preview</span>
+<button onclick="toggleBoxSize('ocrText')" class="bg-slate-200 px-2 py-1 rounded text-xs font-bold">Bara / Chhota</button>
+</div>
+<textarea id="ocrText" class="flexBox w-full border p-2 rounded h-40 mt-1" placeholder="OCR text yahan aayega..."></textarea>
+</div>
+
+<div class="card">
+<h2 class="font-bold">3️⃣ Book Banao & Translate</h2>
+<label class="text-sm">Book Ka Naam</label>
+<input id="bookName" value="Meri Book" class="w-full border p-2 rounded mb-2">
+<label class="text-sm">Book Author (Optional)</label>
+<input id="bookAuthor" placeholder="Masalan: Muhammad Shahid" class="w-full border p-2 rounded mb-2">
+<label class="text-sm">Book Cover Image (Optional)</label>
+<input id="bookCover" type="file" accept="image/*" class="w-full border p-2 rounded mb-1">
+<div id="bookCoverPreview" class="text-xs text-slate-500 mb-2">Koi cover nahi — Sirf text se banega.</div>
+<label class="text-sm">Language</label>
+<select id="targetLang" onchange="translatePreview();fixContentDir();" class="w-full border p-2 rounded mb-2">
+<option value="original">Original (No Translate)</option>
+<option value="ur">Urdu</option>
+<option value="en">English</option>
+<option value="roman">Roman Urdu</option>
+<option value="ar">Arabic</option>
+<option value="hi">Hindi</option>
+<option value="ps">Pashto</option>
+<option value="fa">Persian</option>
+<option value="tr">Turkish</option>
+<option value="fr">French</option>
+<option value="de">German</option>
+<option value="es">Spanish</option>
+<option value="bn">Bengali</option>
+<option value="zh">Chinese</option>
+<option value="ru">Russian</option>
+</select>
+<label class="text-sm">Book Layout</label>
+<select id="bookLayout" class="w-full border p-2 rounded mb-2">
+<option value="beautiful">Beautiful — Flowing, Full Pages (Recommended)</option>
+<option value="simple">Simple</option>
+</select>
+<label class="text-sm">Style</label>
+<select id="bookMode" class="w-full border p-2 rounded mb-3">
+<option value="both">⭐ PRO: Original + Translated (Best)</option>
+<option value="translated">Translated Text Wali Book</option>
+<option value="original">Sirf Original Pages (Fast)</option>
+</select>
+<button onclick="makeBook()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">📖 PRO Book Banao & Download Karo</button>
+<div id="status" class="text-sm mt-3 bg-slate-50 p-2 rounded">Ready hai. Animation har chapter ke samne dekho.</div>
+<div id="downloadArea"></div>
+</div>
+</div>
+
+<div class="card !border-2 !border-emerald-300">
+<h2 class="font-bold">Translation Preview — Pehle Check Karein, Phir Book Banayein <span id="transSpin" title="Translation ho rahi hai to ye ghoomega">⟳</span> <span id="transSpinLabel" class="text-xs font-normal text-slate-500"></span></h2>
+<p class="text-xs text-slate-500">Translated box OCR box jitna hai — 1 page jaisa, Prev/Next se page badlo.</p>
+<div class="flex flex-wrap gap-2 mt-2 items-center text-xs">
+<b>View:</b>
+<button id="viewTransBtn" onclick="setPreviewView('translated')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold">Sirf Translated</button>
+<button id="viewBothBtn" onclick="setPreviewView('both')" class="bg-slate-200 px-3 py-1.5 rounded-full font-bold">Dono Sath (Compare)</button>
+<button id="viewOrigBtn" onclick="setPreviewView('original')" class="bg-slate-200 px-3 py-1.5 rounded-full font-bold">Sirf Original</button>
+<span class="ml-2">Page: 
+<button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-1 rounded font-bold">◀ Prev</button> 
+<span id="previewPageLabel">Page 1 / 1</span> 
+<span id="ocrPageLabel" class="text-emerald-700 font-bold"></span> 
+<button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-1 rounded font-bold">Next ▶</button>
+</span>
+</div>
+<div id="previewGrid" class="grid md:grid-cols-1 gap-3 mt-2">
+<div id="origPreviewWrap" class="hidden">
+<label class="text-xs font-bold">ORIGINAL Text (OCR wala)</label>
+<textarea id="ocrTextPreview" class="flexBox w-full border p-2 rounded h-40 mt-1" readonly></textarea>
+</div>
+<div id="transPreviewWrap">
+<div class="flex justify-between items-center">
+<label class="text-xs font-bold">TRANSLATED — OCR Box Jitna</label>
+<button onclick="toggleBoxSize('translatedBookView')" class="bg-emerald-100 px-2 py-1 rounded text-xs font-bold">Bara / Chhota</button>
+</div>
+<div id="translatedBookView" class="flexBox w-full border p-3 rounded mt-1 bg-white text-[15px] leading-7 whitespace-pre-wrap ltr-text" style="font-family:Georgia,serif"></div>
+<textarea id="translatedPreview" class="hidden" readonly></textarea>
+</div>
+</div>
+<div class="flex gap-2 mt-2">
+<button onclick="translatePreview()" class="flex-1 bg-emerald-600 text-white py-2 rounded-xl font-bold">Translate Preview Dekho — Page-Wise</button>
+<button onclick="swapPreview()" class="bg-slate-200 px-3 py-2 rounded-xl font-bold text-sm">Swap Languages</button>
+</div>
+<p id="previewInfo" class="text-xs mt-1 text-slate-500"></p>
+</div>
+
+<div class="text-center text-xs text-gray-500 pb-6">Made with ❤️ by pdfassembler | PRO V25 Professional</div>
 </main>
+
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-let UI={};
-UI.roman={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Chapters Add Karein',ocrTitle:'FULL OCR',ocrBtn:'Sab Chapters Ka FULL OCR Karo',textBtn:'Sirf Text Nikalo (Fast)',bookTitle:'Book Banao & Translate',makeBtn:'PRO Book Banao & Download Karo',sortBtn:'Naam Se Tarteeb',clearBtn:'Sab Clear'};
-UI.en={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
-UI.ur={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Chapters Add Karein',ocrTitle:'FULL OCR',ocrBtn:'Sab Chapters Ka FULL OCR Karo',textBtn:'Sirf Text Nikalo (Fast)',bookTitle:'Book Banao & Translate',makeBtn:'PRO Book Banao & Download Karo',sortBtn:'Naam Se Tarteeb',clearBtn:'Sab Clear'};
-UI.ar={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
-UI.hi={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
-UI.ps={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
-UI.fa={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
-UI.tr={appTitle:'PDF Kitap Birlestirici PRO',websiteLang:'Web Sitesi Dili:',chaptersTitle:'Bolum Ekle',ocrTitle:'TAM OCR',ocrBtn:'Tum Bolumler icin TAM OCR Yap',textBtn:'Sadece Metin Cikar',bookTitle:'Kitap Olustur ve Cevir',makeBtn:'PRO Kitap Olustur ve Indir',sortBtn:'Isme Gore Sirala',clearBtn:'Tumunu Temizle'};
-UI.fr={appTitle:'Assembleur de Livres PDF PRO',websiteLang:'Langue du site:',chaptersTitle:'Ajouter des Chapitres',ocrTitle:'OCR COMPLET',ocrBtn:'OCR COMPLET - Tous les Chapitres',textBtn:'Extraire le Texte Seulement',bookTitle:'Creer un Livre et Traduire',makeBtn:'Creer un Livre PRO et Telecharger',sortBtn:'Trier par Nom',clearBtn:'Tout Effacer'};
-UI.de={appTitle:'PDF Buch Assembler PRO',websiteLang:'Website-Sprache:',chaptersTitle:'Kapitel Hinzufugen',ocrTitle:'VOLLSTANDIGES OCR',ocrBtn:'VOLLSTANDIGES OCR - Alle Kapitel',textBtn:'Nur Text Extrahieren',bookTitle:'Buch Erstellen und Ubersetzen',makeBtn:'PRO Buch Erstellen und Herunterladen',sortBtn:'Nach Name Sortieren',clearBtn:'Alles Loschen'};
-UI.es={appTitle:'Ensamblador de Libros PDF PRO',websiteLang:'Idioma del sitio:',chaptersTitle:'Agregar Capitulos',ocrTitle:'OCR COMPLETO',ocrBtn:'OCR COMPLETO - Todos los Capitulos',textBtn:'Extraer Solo Texto',bookTitle:'Crear Libro y Traducir',makeBtn:'Crear Libro PRO y Descargar',sortBtn:'Ordenar por Nombre',clearBtn:'Borrar Todo'};
-UI.bn={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
-UI.zh={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
-UI.ru={appTitle:'PDF Book Assembler PRO',websiteLang:'Website Language:',chaptersTitle:'Add Chapters',ocrTitle:'FULL OCR',ocrBtn:'FULL OCR - All Chapters',textBtn:'Extract Text Only (Fast)',bookTitle:'Make Book & Translate',makeBtn:'Make PRO Book & Download',sortBtn:'Sort By Name',clearBtn:'Clear All'};
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// ============ GLOBAL STATE ============
+let chapters = [];
+let _cancel = false;
+let _busy = false;
+let _previewPageIdx = 0;
+let _previewPages = [];
+let _urduFont = null;
+let _arabicFont = null;
+let _syncedPageIdx = 0;
+let _ocrPages = [];
+let _transPagesSync = [];
 
-// ===== V24 FIXES =====
-function stripHeaderFooter(pages){
-  if(!pages||pages.length<3) return pages;
-  // Pehle/akhi line jo 60%+ pages me same aaye = header/footer -> remove
-  function freq(idxFn){let m={};pages.forEach(p=>{let ls=String(p||'').split('\n').map(x=>x.trim()).filter(Boolean);let v=idxFn(ls);if(v)m[v]=(m[v]||0)+1;});return m;}
-  let firstF=freq(ls=>ls[0]||''), lastF=freq(ls=>ls[ls.length-1]||'');
-  let thr=Math.ceil(pages.length*0.6);
-  let badFirst=new Set(Object.keys(firstF).filter(k=>firstF[k]>=thr && k.length<90));
-  let badLast=new Set(Object.keys(lastF).filter(k=>lastF[k]>=thr && k.length<90));
-  return pages.map(p=>{
-    let lines=String(p||'').split('\n');
-    // standalone page numbers + "Page X" + running numbers hatayein
-    lines=lines.filter(ln=>{
-      let t=ln.trim();
-      if(!t) return true;
-      if(/^\d{1,4}$/.test(t)) return false;
-      if(/^(page|p\.?|safha|صفحہ)\s*\d{1,4}\s*(of|\/|-)?\s*\d{0,4}$/i.test(t)) return false;
-      if(/^\d{1,4}\s*[\|\-\–\—\/]\s*.{0,60}$/.test(t) && t.length<70) return false;
-      if(/^.{0,60}\s*[\|\-\–\—\/]\s*\d{1,4}$/.test(t) && t.length<70) return false;
+// ============ UI LANGUAGE ============
+const UI = {
+  roman: { appTitle:'PDF Book Assembler PRO', websiteLang:'Website Language:', chaptersTitle:'Chapters Add Karein', ocrTitle:'FULL OCR', ocrBtn:'Sab Chapters Ka FULL OCR Karo', textBtn:'Sirf Text Nikalo (Fast)', bookTitle:'Book Banao & Translate', makeBtn:'PRO Book Banao & Download Karo', sortBtn:'Naam Se Tarteeb', clearBtn:'Sab Clear' },
+  en: { appTitle:'PDF Book Assembler PRO', websiteLang:'Website Language:', chaptersTitle:'Add Chapters', ocrTitle:'FULL OCR', ocrBtn:'FULL OCR - All Chapters', textBtn:'Extract Text Only (Fast)', bookTitle:'Make Book & Translate', makeBtn:'Make PRO Book & Download', sortBtn:'Sort By Name', clearBtn:'Clear All' },
+  ur: { appTitle:'PDF Book Assembler PRO', websiteLang:'ویب سائٹ کی زبان:', chaptersTitle:'ابواب شامل کریں', ocrTitle:'مکمل OCR', ocrBtn:'تمام ابواب کا OCR کریں', textBtn:'صرف متن نکالیں', bookTitle:'کتاب بنائیں اور ترجمہ کریں', makeBtn:'PRO کتاب بنائیں اور ڈاؤن لوڈ کریں', sortBtn:'نام سے ترتیب', clearBtn:'سب صاف کریں' }
+};
+
+function setUILang(l) {
+  let d = UI[l] || UI.roman;
+  document.querySelectorAll('[data-i18n]').forEach(e => { if (d[e.dataset.i18n]) e.textContent = d[e.dataset.i18n]; });
+  let sel = document.getElementById('uiLang');
+  if (sel) sel.value = l;
+  try { localStorage.setItem('uiLang', l); } catch(e) {}
+  let st = document.getElementById('status');
+  if (st) st.textContent = 'Website Language: ' + l;
+}
+
+// ============ TEXT UTILITIES ============
+function stripInvisible(str) {
+  if (!str) return '';
+  return String(str).replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g, '');
+}
+
+function cleanTextForPDF(str) {
+  if (!str) return '';
+  return stripInvisible(String(str));
+}
+
+function cleanForPDF(str) {
+  if (!str) return '';
+  let t = stripInvisible(String(str));
+  return t.replace(/[\n\r]+/g, ' ').slice(0, 120);
+}
+
+function isRTLText(txt) {
+  return /[\u0600-\u06FF]/.test(txt);
+}
+
+function needsComplexFont(txt) {
+  return /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(txt || '');
+}
+
+function detectTextLang(txt) {
+  let a = (txt.match(/[\u0600-\u06FF]/g) || []).length;
+  let l = (txt.match(/[A-Za-z]/g) || []).length;
+  if (a > l && a > 20) return 'ur';
+  return 'en';
+}
+
+function cleanOCRText(txt) {
+  if (!txt) return '';
+  let lines = String(txt).split('\n');
+  let out = [];
+  for (let ln of lines) {
+    let t = ln.trim();
+    if (/^\d{1,3}$/.test(t)) continue;
+    if (/^\d{1,3}\s+[A-Za-z]{1,3}$/.test(t)) continue;
+    if (t.length <= 2) continue;
+    out.push(ln);
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+
+function fixContentDir() {
+  let oc = document.getElementById('ocrText');
+  if (oc) {
+    let d = isRTLText(oc.value) ? 'rtl' : 'ltr';
+    oc.dir = d;
+    oc.style.textAlign = (d == 'rtl' ? 'right' : 'left');
+  }
+  let bv = document.getElementById('translatedBookView');
+  if (bv) {
+    let tgt = document.getElementById('targetLang') ? document.getElementById('targetLang').value : 'en';
+    let rtl = (tgt == 'ur' || tgt == 'ar' || tgt == 'fa' || tgt == 'ps');
+    bv.dir = rtl ? 'rtl' : 'ltr';
+    bv.className = 'flexBox w-full border p-3 rounded mt-1 bg-white text-[15px] leading-7 whitespace-pre-wrap ' + (rtl ? 'rtl-text' : 'ltr-text');
+  }
+}
+
+// ============ V25 HEADER/FOOTER REMOVAL ============
+function stripHeaderFooter(pages) {
+  if (!pages || pages.length < 3) return pages;
+  
+  function freq(idxFn) {
+    let m = {};
+    pages.forEach(p => {
+      let ls = String(p || '').split('\n').map(x => x.trim()).filter(Boolean);
+      let v = idxFn(ls);
+      if (v) m[v] = (m[v] || 0) + 1;
+    });
+    return m;
+  }
+  
+  let firstF = freq(ls => ls[0] || '');
+  let lastF = freq(ls => ls[ls.length - 1] || '');
+  let thr = Math.ceil(pages.length * 0.6);
+  let badFirst = new Set(Object.keys(firstF).filter(k => firstF[k] >= thr && k.length < 90));
+  let badLast = new Set(Object.keys(lastF).filter(k => lastF[k] >= thr && k.length < 90));
+  
+  return pages.map(p => {
+    let lines = String(p || '').split('\n');
+    lines = lines.filter(ln => {
+      let t = ln.trim();
+      if (!t) return true;
+      if (/^\d{1,4}$/.test(t)) return false;
+      if (/^(page|p\.?|safha|صفحہ)\s*\d{1,4}\s*(of|\/|-)?\s*\d{0,4}$/i.test(t)) return false;
+      if (/^\d{1,4}\s*[\|\-\–\—\/]\s*.{0,60}$/.test(t) && t.length < 70) return false;
+      if (/^.{0,60}\s*[\|\-\–\—\/]\s*\d{1,4}$/.test(t) && t.length < 70) return false;
       return true;
     });
-    if(lines.length && badFirst.has(lines[0].trim())) lines.shift();
-    if(lines.length && badLast.has(lines[lines.length-1].trim())) lines.pop();
+    if (lines.length && badFirst.has(lines[0].trim())) lines.shift();
+    if (lines.length && badLast.has(lines[lines.length - 1].trim())) lines.pop();
     return lines.join('\n');
   });
 }
-function countWrappedLines(text, maxChars){
-  if(!String(text||'').trim()) return 0;
-  return wrapText(String(text).replace(/\s+/g,' ').trim(), maxChars).length;
-}
-// Translated ko EXACT utni lines me baanto jitni original page me thi.
-// Har lafz mehfooz rehta hai, lines ki tadaad barabar hoti hai.
-function matchLines(translatedText, targetLines, maxChars){
-  let words=String(translatedText||'').replace(/\s+/g,' ').trim().split(/\s+/).filter(Boolean);
-  if(targetLines<=0) targetLines=1;
-  if(!words.length) return Array(targetLines).fill('');
-  // Greedy wrap, phir target tak adjust
-  let lines=[]; let cur='';
-  for(let w of words){ if(!cur) cur=w; else if((cur+' '+w).length<=maxChars) cur+=' '+w; else {lines.push(cur); cur=w;} }
-  if(cur) lines.push(cur);
-  // Zyada lines hain -> qareebi lines merge karo (lafz zaya nahi honge)
-  while(lines.length>targetLines){
-    let bi=0, best=1e9;
-    for(let i=0;i<lines.length-1;i++){let l=(lines[i]+' '+lines[i+1]).length; if(l<best){best=l; bi=i;}}
-    lines.splice(bi,2,lines[bi]+' '+lines[bi+1]);
+
+// ============ V25 LINE MATCHING (EXACT) ============
+function wrapText(str, max) {
+  let words = String(str || '').replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  let lines = [], cur = '';
+  for (let w of words) {
+    if (!cur) cur = w;
+    else if ((cur + ' ' + w).length <= max) cur += ' ' + w;
+    else { lines.push(cur); cur = w; }
   }
-  // Kam lines hain -> sab se lambi line ko todo
-  while(lines.length<targetLines){
-    let li=0, best=-1;
-    lines.forEach((L,i)=>{ if(L.length>best){best=L.length; li=i;} });
-    let parts=lines[li].split(' ');
-    if(parts.length<2) break;
-    let mid=Math.ceil(parts.length/2);
-    lines.splice(li,1,parts.slice(0,mid).join(' '), parts.slice(mid).join(' '));
-  }
-  return lines.slice(0,targetLines);
+  if (cur) lines.push(cur);
+  return lines;
 }
-let _urduFont=null, _arabicFont=null;
-async function loadUrduFont(doc){
-  if(_urduFont) return _urduFont;
-  try{
-    if(window.fontkit) doc.registerFontkit(window.fontkit);
-    // Noto Nastaliq Urdu - Google Fonts (CDN)
-    let urls=['https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notonastaliqurdu/NotoNastaliqUrdu%5Bwght%5D.ttf','https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf'];
-    for(let u of urls){
-      try{let r=await fetch(u); if(!r.ok) continue; let b=await r.arrayBuffer(); _urduFont=await doc.embedFont(b); return _urduFont;}catch(e){}
+
+function countWrappedLines(text, maxChars) {
+  if (!String(text || '').trim()) return 0;
+  return wrapText(String(text).replace(/\s+/g, ' ').trim(), maxChars).length;
+}
+
+/**
+ * V25 EXACT LINE MATCHING
+ * Ensures translated text has EXACTLY targetLines lines.
+ * Preserves every word - no text loss.
+ */
+function matchLines(translatedText, targetLines, maxChars) {
+  let words = String(translatedText || '').replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  if (targetLines <= 0) targetLines = 1;
+  if (!words.length) return Array(targetLines).fill('');
+  
+  // Initial greedy wrap
+  let lines = [], cur = '';
+  for (let w of words) {
+    if (!cur) cur = w;
+    else if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  
+  // Too many lines → merge smallest adjacent pair
+  while (lines.length > targetLines) {
+    let bi = 0, best = 1e9;
+    for (let i = 0; i < lines.length - 1; i++) {
+      let len = (lines[i] + ' ' + lines[i + 1]).length;
+      if (len < best) { best = len; bi = i; }
     }
-  }catch(e){}
+    lines.splice(bi, 2, lines[bi] + ' ' + lines[bi + 1]);
+  }
+  
+  // Too few lines → split longest line
+  while (lines.length < targetLines) {
+    let li = 0, best = -1;
+    lines.forEach((L, i) => { if (L.length > best) { best = L.length; li = i; } });
+    let parts = lines[li].split(' ');
+    if (parts.length < 2) break;
+    let mid = Math.ceil(parts.length / 2);
+    lines.splice(li, 1, parts.slice(0, mid).join(' '), parts.slice(mid).join(' '));
+  }
+  
+  return lines.slice(0, targetLines);
+}
+
+// ============ V25 TRUE JUSTIFICATION ============
+/**
+ * Draws a line justified to EXACTLY targetWidth on both sides.
+ * Last line of page is left-aligned (standard typographic convention).
+ * RTL text is handled by reversing word order.
+ */
+function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
+  let txt = cleanTextForPDF(lineText);
+  if (!txt.trim()) return;
+  
+  let words = txt.split(/\s+/).filter(w => w.length > 0);
+  if (words.length <= 1) {
+    safeDraw(pg, txt, { x: x, y: y, size: size, font: fontObj });
+    return;
+  }
+  
+  // Calculate natural width
+  let naturalW = 0;
+  words.forEach(w => {
+    try { naturalW += fontObj.widthOfTextAtSize(w, size); } catch(e) { naturalW += w.length * size * 0.5; }
+  });
+  
+  let spaceW;
+  try { spaceW = fontObj.widthOfTextAtSize(' ', size); } catch(e) { spaceW = size * 0.3; }
+  
+  let gaps = words.length - 1;
+  let totalNatural = naturalW + spaceW * gaps;
+  let extra = targetWidth - totalNatural;
+  let extraPerGap = gaps > 0 ? extra / gaps : 0;
+  
+  // If too much extra space (>12pt per gap), don't justify - just left align
+  if (extra < 0 || extraPerGap > 12 || isLastLine) {
+    // Left-align (or right-align for RTL)
+    if (isRTL) {
+      let curX = x + targetWidth;
+      for (let i = words.length - 1; i >= 0; i--) {
+        let wW;
+        try { wW = fontObj.widthOfTextAtSize(words[i], size); } catch(e) { wW = words[i].length * size * 0.5; }
+        curX -= wW;
+        safeDraw(pg, words[i], { x: curX, y: y, size: size, font: fontObj });
+        curX -= spaceW;
+      }
+    } else {
+      safeDraw(pg, txt, { x: x, y: y, size: size, font: fontObj });
+    }
+    return;
+  }
+  
+  // TRUE JUSTIFICATION - both sides aligned
+  if (isRTL) {
+    // RTL: right-to-left, words positioned from right
+    let curX = x + targetWidth;
+    for (let i = words.length - 1; i >= 0; i--) {
+      let wW;
+      try { wW = fontObj.widthOfTextAtSize(words[i], size); } catch(e) { wW = words[i].length * size * 0.5; }
+      curX -= wW;
+      safeDraw(pg, words[i], { x: curX, y: y, size: size, font: fontObj });
+      curX -= (spaceW + extraPerGap);
+    }
+  } else {
+    // LTR: left-to-right
+    let curX = x;
+    words.forEach(w => {
+      safeDraw(pg, w, { x: curX, y: y, size: size, font: fontObj });
+      let wW;
+      try { wW = fontObj.widthOfTextAtSize(w, size); } catch(e) { wW = w.length * size * 0.5; }
+      curX += wW + spaceW + extraPerGap;
+    });
+  }
+}
+
+function safeDraw(page, txt, opts) {
+  try { page.drawText(cleanTextForPDF(txt), opts); }
+  catch(e) {
+    try { page.drawText(cleanForPDF(txt), opts); }
+    catch(e2) { /* skip */ }
+  }
+}
+
+// ============ FONT LOADING ============
+async function loadUrduFont(doc) {
+  if (_urduFont) return _urduFont;
+  try {
+    if (window.fontkit) doc.registerFontkit(window.fontkit);
+    let urls = [
+      'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notonastaliqurdu/NotoNastaliqUrdu%5Bwght%5D.ttf',
+      'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf',
+      'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notonaskharabic/NotoNaskhArabic%5Bwght%5D.ttf'
+    ];
+    for (let u of urls) {
+      try {
+        let r = await fetch(u);
+        if (!r.ok) continue;
+        let b = await r.arrayBuffer();
+        _urduFont = await doc.embedFont(b);
+        return _urduFont;
+      } catch(e) {}
+    }
+  } catch(e) {}
   return null;
 }
-function needsComplexFont(txt){ return /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(txt||''); }
 
-let chapters=[];let _cancel=false;let _busy=false;let _previewPageIdx=0;let _previewPages=[];
-function detectTextLang(txt){let a=(txt.match(/[\u0600-\u06FF]/g)||[]).length;let l=(txt.match(/[A-Za-z]/g)||[]).length;if(a>l&&a>20)return 'ur';return 'en';}
-function isRTLText(txt){return /[\u0600-\u06FF]/.test(txt);}
-function stripInvisible(str){if(!str)return '';return String(str).replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g,'');}
-function cleanForPDF(str){if(!str)return '';let t=stripInvisible(String(str));return t.replace(/[\n\r]+/g,' ').slice(0,120);}
-function cleanTextForPDF(str){if(!str)return '';let t=stripInvisible(String(str));return t;}
-function cleanOCRText(txt){if(!txt)return '';let lines=String(txt).split('\n');let out=[];for(let ln of lines){let t=ln.trim();if(/^\d{1,3}$/.test(t))continue;if(/^\d{1,3}\s+[A-Za-z]{1,3}$/.test(t))continue;if(/^(Two|One|Three)\s+\d+$/.test(t))continue;if(t.length<=2)continue;out.push(ln);}return out.join('\n').replace(/\n{3,}/g,'\n\n');}
-function safeDraw(page,txt,opts){try{page.drawText(cleanTextForPDF(txt),opts);}catch(e){try{page.drawText(cleanForPDF(txt),opts);}catch(e2){}}}
-function mergeOCRParagraphs(txt){if(!txt)return '';let lines=String(txt).split('\n').map(l=>l.trim()).filter(l=>l.length>0);let paras=[];let cur='';function flush(){if(cur.trim())paras.push(cur.trim());cur='';}for(let ln of lines){if(/^--- Page Break/.test(ln)||/^--- Original Page/.test(ln)){flush();paras.push(ln);continue;}if(/^===== CHAPTER/.test(ln)){flush();paras.push(ln);continue;}if(cur.length==0){cur=ln;continue;}let prevEnd=cur.slice(-1);if(prevEnd=='.'||prevEnd=='!'||prevEnd=='?'||prevEnd==':'||prevEnd=='"'){flush();cur=ln;}else{cur+=' '+ln;}}flush();return paras.join('\n\n');}
-function fixContentDir(){let oc=document.getElementById('ocrText');if(oc){let d=isRTLText(oc.value)?'rtl':'ltr';oc.dir=d;oc.style.textAlign=(d=='rtl'?'right':'left');}let bv=document.getElementById('translatedBookView');if(bv){let tgt=document.getElementById('targetLang')?document.getElementById('targetLang').value:'en';let rtl=(tgt=='ur'||tgt=='ar'||tgt=='fa'||tgt=='ps');bv.dir=rtl?'rtl':'ltr';bv.style.textAlign=rtl?'right':'left';}}
-function setUILang(l){let d=UI[l]||UI.roman;document.querySelectorAll('[data-i18n]').forEach(e=>{if(d[e.dataset.i18n])e.textContent=d[e.dataset.i18n];});let sel=document.getElementById('uiLang');if(sel)sel.value=l;try{localStorage.setItem('uiLang',l);}catch(e){}let hdr=document.querySelector('header');if(hdr)hdr.dir='ltr';let mn=document.querySelector('main');if(mn)mn.dir='ltr';fixContentDir();let st=document.getElementById('status');if(st)st.textContent='Website Language: '+l+' - Poori website ki language badal gayi (Global).';}
-function resetHang(){_busy=false;_cancel=true;window._activeChap=-1;chapters.forEach((c,i)=>{setChapterSpin(i,false,'');});let st=document.getElementById('status');if(st)st.textContent='Hang Reset ho gaya - Ab dobara try karo. Sab buttons wapas kaam karenge.';setTransSpin(false,'');}
-function cancelOCR(){_cancel=true;}
-function testChapterSpinners(){chapters.forEach((c,i)=>{setChapterSpin(i,true,'Test...');});setTimeout(()=>{chapters.forEach((c,i)=>{setChapterSpin(i,false,'done');});},1800);}
-function toggleBoxSize(id){let el=document.getElementById(id);if(!el)return;el.classList.toggle('big');}
-function setTransSpin(on,msg){let el=document.getElementById('transSpin');if(el){if(on)el.classList.add('spinning');else el.classList.remove('spinning');}let lb=document.getElementById('transSpinLabel');if(lb)lb.textContent=msg||'';}
-function setChapterSpin(i,on,msg){let el=document.getElementById('chapSpin-'+i);if(el){el.className='chapSpin '+(on?'spinning':'done');el.textContent=on?'⟳':(msg=='done'?'✅':'○');}let lb=document.getElementById('chapStatus-'+i);if(lb)lb.textContent=on?'Kaam ho raha hai...':(msg=='done'?'Mukammal ✅':'');let row=document.getElementById('chapRow-'+i);if(row){if(on)row.classList.add('active');else row.classList.remove('active');}}
-function setPreviewView(mode){let ow=document.getElementById('origPreviewWrap');let tw=document.getElementById('transPreviewWrap');let grid=document.getElementById('previewGrid');let bT=document.getElementById('viewTransBtn');let bB=document.getElementById('viewBothBtn');let bO=document.getElementById('viewOrigBtn');[bT,bB,bO].forEach(b=>{if(b)b.className='bg-slate-200 px-3 py-1.5 rounded-full font-bold';});if(mode=='translated'){if(ow)ow.classList.add('hidden');if(tw)tw.classList.remove('hidden');if(grid)grid.className='grid md:grid-cols-1 gap-3 mt-2';if(bT)bT.className='bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';}else if(mode=='both'){if(ow)ow.classList.remove('hidden');if(tw)tw.classList.remove('hidden');if(grid)grid.className='grid md:grid-cols-2 gap-3 mt-2';if(bB)bB.className='bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';}else{if(ow)ow.classList.remove('hidden');if(tw)tw.classList.add('hidden');if(grid)grid.className='grid md:grid-cols-1 gap-3 mt-2';if(bO)bO.className='bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';}try{localStorage.setItem('previewView',mode);}catch(e){}fixContentDir();}
-let _syncedPageIdx=0;let _ocrPages=[];let _transPagesSync=[];
-function rebuildSyncedPages(){_ocrPages=[];_transPagesSync=[];chapters.forEach((ch,ci)=>{let op=ch.pagesText||[];let tp=ch.translatedPages||[];let n=Math.max(op.length,tp.length,1);for(let pi=0;pi<n;pi++){_ocrPages.push({ch:ci,pi:pi,text:(op[pi]||'')});_transPagesSync.push({ch:ci,pi:pi,text:(tp[pi]||'')});}});if(!_ocrPages.length){_ocrPages=[{ch:0,pi:0,text:document.getElementById('ocrText')?document.getElementById('ocrText').value:''}];_transPagesSync=[{ch:0,pi:0,text:document.getElementById('translatedPreview')?document.getElementById('translatedPreview').value:''}];}renderSyncedPage();}
-function renderSyncedPage(){let oc=document.getElementById('ocrText');let dv=document.getElementById('translatedBookView');let lb=document.getElementById('previewPageLabel');let total=_ocrPages.length;let cur=_ocrPages[_syncedPageIdx]||{ch:0,pi:0,text:''};let curT=_transPagesSync[_syncedPageIdx]||{ch:0,pi:0,text:''};if(oc)oc.value=cur.text;if(dv)dv.textContent=curT.text||'Abhi translate nahi hua.';let label='Page '+(_syncedPageIdx+1)+' / '+total+' - Chapter '+(cur.ch+1)+' - Original Page '+(cur.pi+1);if(lb)lb.textContent=label;fixContentDir();}
-function syncedPage(dir){if(!_ocrPages.length)rebuildSyncedPages();_syncedPageIdx=Math.max(0,Math.min(_ocrPages.length-1,_syncedPageIdx+dir));renderSyncedPage();}
-function previewPage(dir){syncedPage(dir);}
-
-function splitIntoPreviewPages(text,charsPerPage){if(!text)return [''];let pages=[];for(let i=0;i<text.length;i+=charsPerPage)pages.push(text.slice(i,i+charsPerPage));return pages;}
-function renderPreviewPage(){let dv=document.getElementById('translatedBookView');if(!dv)return;if(!_previewPages.length){dv.textContent='Abhi translate nahi hua - Translate Preview Dekho dabao.';let lb=document.getElementById('previewPageLabel');if(lb)lb.textContent='Page 0 / 0';return;}dv.textContent=_previewPages[_previewPageIdx]||'';let lb=document.getElementById('previewPageLabel');if(lb)lb.textContent='Page '+(_previewPageIdx+1)+' / '+_previewPages.length+' (OCR box jitna)';}
-/* previewPage = syncedPage (upar wali) - duplicate hataya gaya taake OCR + Translated dono ek saath badlen */
-function syncTranslatedBookView(){let ta=document.getElementById('translatedPreview');if(!ta)return;let t=stripInvisible(ta.value||'');_previewPages=splitIntoPreviewPages(t,1400);_previewPageIdx=0;renderPreviewPage();}
-async function translateOneChunk(chunk,srcLang,tgt){chunk=stripInvisible(chunk);try{let url='https://translate.googleapis.com/translate_a/single?client=gtx&sl='+srcLang+'&tl='+tgt+'&dt=t&q='+encodeURIComponent(chunk);let r=await fetch(url);let j=await r.json();let out='';if(j&&j[0])j[0].forEach(x=>{if(x&&x[0])out+=x[0];});if(out&&out.trim())return stripInvisible(out);}catch(e){}try{let res=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(chunk)+'&langpair='+srcLang+'|'+tgt);let j=await res.json();let tr=(j.responseData&&j.responseData.translatedText)||'';if(tr&&tr.indexOf('PLEASE SELECT')<0&&tr.indexOf('MYMEMORY WARNING')<0)return stripInvisible(tr);}catch(e){}return chunk;}
-async function translateChunk(text,target){if(!text.trim()||target=='original')return text;text=stripInvisible(text);let srcLang=detectTextLang(text);let map={ur:'ur',en:'en',roman:'roman',ar:'ar',hi:'hi',ps:'ps',fa:'fa',tr:'tr',fr:'fr',de:'de',es:'es',bn:'bn',zh:'zh-CN',ru:'ru'};let tgt=map[target]||'en';if(target=='roman'){let tr=await translateChunk(text,'en');return tr; /* Roman = English words in Roman script; API has no 'roman' code, so English bridge is kept intentionally */}if(srcLang==tgt)return text;let out='';for(let i=0;i<text.length;i+=450){let chunk=text.slice(i,i+450);if(!chunk.trim()){out+=chunk;continue;}out+=await translateOneChunk(chunk,srcLang,tgt)+' ';await new Promise(r=>setTimeout(r,120));}return stripInvisible(out);}
-async function translatePageWise(ch,target){let srcPages=ch.pagesText||[ch.text||''];let outPages=[];for(let pi=0;pi<srcPages.length;pi++){let pgTxt=cleanOCRText(stripInvisible(srcPages[pi]||''));if(!pgTxt.trim()){outPages.push('');continue;}outPages.push(await translateChunk(pgTxt,target));}return outPages;}
-async function translatePreview(){let target=document.getElementById('targetLang').value;if(target=='original'){document.getElementById('translatedPreview').value='Original selected - translate nahi hoga.';syncTranslatedBookView();return;}let src=cleanOCRText(document.getElementById('ocrText').value||'');if(!src.trim()){alert('Pehle OCR karein');return;}let srcLang=detectTextLang(src);let lenSel=document.getElementById('previewLen')?document.getElementById('previewLen').value:'0';let len=parseInt(lenSel);let pageWise=document.getElementById('pageWise')?document.getElementById('pageWise').checked:true;document.getElementById('previewInfo').textContent='Source: '+srcLang+' -> Target: '+target+' | '+(pageWise?'Page-Wise ORDER':'Full')+' | Length: '+(len==0?'NO LIMIT':len+' haroof');if((srcLang=='ur'&&target=='ur')||(srcLang=='en'&&target=='en')){document.getElementById('translatedPreview').value='Ye text pehle se hi isi language me hai.';syncTranslatedBookView();return;}setTransSpin(true,'Translating... ghoom raha hai = kaam ho raha hai');document.getElementById('translatedPreview').value='Translating... Page-Wise ho raha hai.';syncTranslatedBookView();let tr='';if(pageWise&&chapters.length&&chapters[0].pagesText&&chapters[0].pagesText.length){let all=[];for(let ci=0;ci<chapters.length;ci++){setChapterSpin(ci,true,'Translating...');let pgTr=await translatePageWise(chapters[ci],target);chapters[ci].translatedPages=pgTr;setChapterSpin(ci,false,'done');all.push(pgTr.join('\n\n--- Page Break ---\n\n'));}tr=all.join('\n\n===== NEXT CHAPTER =====\n\n');}else{let sample=(len==0)?src:src.slice(0,len);tr=await translateChunk(sample,target);}document.getElementById('translatedPreview').value=tr;fixContentDir();syncTranslatedBookView();rebuildSyncedPages();setTransSpin(false,'Translation mukammal ✓');document.getElementById('previewInfo').textContent+=' | Translated: '+tr.length+' haroof - Prev/Next se page badlo.';}
-function swapPreview(){let t=document.getElementById('targetLang');let cur=t.value;t.value=(cur=='ur'?'en':(cur=='en'?'ur':cur));translatePreview();}
-function readImageFile(file){return new Promise((res,rej)=>{let r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file);});}
-async function onBookCoverChange(e){let f=e.target.files[0];if(!f)return;window._bookCoverData=await readImageFile(f);window._bookCoverType=f.type;document.getElementById('bookCoverPreview').innerHTML='Cover lag gaya: '+f.name;}
-async function onChapterCoverChange(i,e){let f=e.target.files[0];if(!f)return;chapters[i].coverData=await readImageFile(e.target.files[0]);chapters[i].coverType=f.type;renderChapters();}
-function sortByName(){chapters.sort((a,b)=>a.title.localeCompare(b.title));renderChapters();}
-function clearAll(){chapters=[];document.getElementById('ocrText').value='';document.getElementById('translatedPreview').value='';_previewPages=[];renderPreviewPage();renderChapters();}
-function updateTOC(){let toc=document.getElementById('tocPreview');if(!toc)return;if(!chapters.length){toc.classList.add('hidden');return;}toc.classList.remove('hidden');document.getElementById('tocList').textContent=chapters.map((c,i)=>'Chapter '+(i+1)+': '+c.title+' - '+(c.pages||0)+' pages').join('\n');}
-function renderChapters(){let list=document.getElementById('fileList');if(!list)return;if(!chapters.length){list.innerHTML='<p class="text-sm text-slate-500">Koi chapter nahi - PDF add karein.</p>';return;}list.innerHTML='';chapters.forEach((ch,i)=>{let div=document.createElement('div');div.id='chapRow-'+i;div.className='chapterRow '+(ch.ocrDone?'done':'')+(window._activeChap==i?' active':'');div.innerHTML='<div class="flex items-center gap-2"><div class="chapNum">'+(i+1)+'</div><span id="chapSpin-'+i+'" class="chapSpin">'+(ch.ocrDone?'✅':'○')+'</span><div class="flex-1"><input value="'+ch.title.replace(/"/g,'')+'" onchange="chapters['+i+'].title=this.value;updateTOC()" class="w-full border p-1 rounded font-bold"><p class="text-xs text-slate-500">'+(ch.pages||0)+' pages - '+(ch.ocrDone?'OCR Done ✅':'OCR Baqi')+' <span id="chapStatus-'+i+'" class="text-xs"></span></p></div><label class="bg-purple-100 px-2 py-1 rounded text-xs font-bold cursor-pointer">Cover<input type="file" accept="image/*" class="hidden" onchange="onChapterCoverChange('+i+',event)"></label><button onclick="runOCROne('+i+')" class="bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-bold" title="Sirf is chapter ka OCR - Chapter-wise">🔍 Is Chapter Ka OCR</button><button onclick="moveChapter('+i+',-1)" class="bg-slate-200 px-2 py-1 rounded text-xs">↑</button><button onclick="moveChapter('+i+',1)" class="bg-slate-200 px-2 py-1 rounded text-xs">↓</button><button onclick="removeChapter('+i+')" class="bg-red-100 px-2 py-1 rounded text-xs">✕</button></div>';list.appendChild(div);});updateTOC();}
-function moveChapter(i,dir){let j=i+dir;if(j<0||j>=chapters.length)return;let tmp=chapters[i];chapters[i]=chapters[j];chapters[j]=tmp;renderChapters();}
-function removeChapter(i){chapters.splice(i,1);renderChapters();}
-async function getChapterText(ch,useOCR,onPage){let buf=await ch.file.arrayBuffer();let pdf=await pdfjsLib.getDocument({data:buf}).promise;let all='';let pagesText=[];let scale=parseFloat(document.getElementById('ocrQuality')?document.getElementById('ocrQuality').value:'2');let lang=document.getElementById('ocrLang')?document.getElementById('ocrLang').value:'urd';for(let p=1;p<=pdf.numPages;p++){if(_cancel)break;let page=await pdf.getPage(p);if(onPage)onPage(p,pdf.numPages);let pageTxt='';if(!useOCR){try{let tc=await page.getTextContent();let t=tc.items.map(x=>x.str).join(' ');if(t.trim().length>30)pageTxt=stripInvisible(t);}catch(e){}}if(!pageTxt){let vp=page.getViewport({scale:scale});let c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;try{let r=await Tesseract.recognize(c,lang,{logger:()=>{}});pageTxt=stripInvisible(r.data.text||'');}catch(e){}}pageTxt=cleanOCRText(pageTxt);pagesText.push(pageTxt);all+=pageTxt+'\n\n--- Page Break (Original Page '+p+') ---\n\n';await new Promise(r=>setTimeout(r,10));}pagesText=stripHeaderFooter(pagesText); ch.pagesText=pagesText; ch.origLineCounts=pagesText.map(p=>countWrappedLines(p,68)); let all2=''; pagesText.forEach((pp,pi)=>{all2+=pp+'\n\n--- Page Break (Original Page '+(pi+1)+') ---\n\n';}); return stripInvisible(all2);}
-async function runOCROne(i){await runFullOCR(i);}
-async function runFullOCR(onlyIdx=null){if(_busy){alert('Kaam chal raha hai');return;}if(!chapters.length){alert('Pehle Chapters add karein');return;}let indices=onlyIdx!=null?[onlyIdx]:chapters.map((_,i)=>i);let totalPages=indices.reduce((s,i)=>s+(chapters[i].pages||0),0);_busy=true;_cancel=false;document.getElementById('status').textContent='OCR ho raha hai - Har chapter ke samne spinner dekho...';let done=0;for(let idx of indices){if(_cancel)break;window._activeChap=idx;setChapterSpin(idx,true,'OCR...');let ch=chapters[idx];let txt=await getChapterText(ch,true,(p,tot)=>{document.getElementById('ocrStatus').textContent='Chapter '+(idx+1)+' - Page '+p+'/'+tot+' - OCR...';});ch.text=txt;ch.ocrDone=true;done+=ch.pages||0;setChapterSpin(idx,false,'done');renderChapters();}let combined='';chapters.forEach((c,i)=>{combined+='\n\n===== CHAPTER '+(i+1)+': '+c.title+' =====\n\n'+(c.text||'');});document.getElementById('ocrText').value=stripInvisible(combined);rebuildSyncedPages();let pp=document.getElementById('ocrTextPreview');if(pp)pp.value=stripInvisible(combined).slice(0,3000);fixContentDir();_busy=false;window._activeChap=-1;renderChapters();document.getElementById('ocrStatus').innerHTML=_cancel?'Roka gaya.':'ORIGINAL OCR MUKAMMAL! '+indices.length+' chapter(s), '+totalPages+' pages.';document.getElementById('status').textContent='OCR mukammal - Har chapter ke samne ✅ aa gaya.';}
-async function extractAllText(){if(_busy){alert('Kaam chal raha hai');return;} if(!chapters.length){alert('Pehle Chapters add karein');return;} _cancel=false;for(let i=0;i<chapters.length;i++){setChapterSpin(i,true,'Text...');let ch=chapters[i];ch.text=await getChapterText(ch,false,null);ch.ocrDone=true;setChapterSpin(i,false,'done');}let combined='';chapters.forEach((c,i)=>{combined+='\n\n===== CHAPTER '+(i+1)+': '+c.title+' =====\n\n'+(c.text||'');});document.getElementById('ocrText').value=stripInvisible(combined);rebuildSyncedPages();renderChapters();document.getElementById('ocrStatus').innerHTML='Text nikal liya gaya (Fast).';}
-function wrapText(str,max){let words=str.split(/\s+/);let lines=[],cur='';for(let w of words){if((cur+' '+w).length>max){lines.push(cur);cur=w;}else cur=cur?cur+' '+w:w;}if(cur)lines.push(cur);return lines;}
-function drawJustifiedLine(pg,lineText,x,y,size,fontObj,isLastLine,isFirstLine){let txt=cleanTextForPDF(lineText);if(isLastLine||txt.indexOf(' ')<0){safeDraw(pg,(isFirstLine?'    ':'')+txt,{x:x,y:y,size:size,font:fontObj});return;}let words=txt.split(/\s+/).filter(w=>w.length>0);if(words.length<=1){safeDraw(pg,txt,{x:x,y:y,size:size,font:fontObj});return;}let targetW=495;let naturalW=0;words.forEach(w=>{naturalW+=fontObj.widthOfTextAtSize(w,size);});let spaceW=fontObj.widthOfTextAtSize(' ',size);let gaps=words.length-1;let totalNatural=naturalW+spaceW*gaps;let extra=targetW-totalNatural;let extraPerGap=gaps>0?extra/gaps:0;if(extra<0||extraPerGap>12){safeDraw(pg,txt,{x:x,y:y,size:size,font:fontObj});return;}let curX=x+(isFirstLine?18:0);words.forEach((w,wi)=>{safeDraw(pg,w,{x:curX,y:y,size:size,font:fontObj});curX+=fontObj.widthOfTextAtSize(w,size)+spaceW+extraPerGap;});}
-
-async function makeBook(){if(!chapters.length){alert('Pehle Chapters add karein');return;}let hasText=chapters.some(c=>c.text&&c.text.trim().length>20);if(!hasText){await extractAllText();}let target=document.getElementById('targetLang').value;let mode=document.getElementById('bookMode').value;let layout=document.getElementById('bookLayout')?document.getElementById('bookLayout').value:'beautiful';let pageWise=document.getElementById('pageWise')?document.getElementById('pageWise').checked:true;let bookName=stripInvisible(document.getElementById('bookName').value||'Meri Book');let bookAuthor=document.getElementById('bookAuthor')?stripInvisible(document.getElementById('bookAuthor').value):'';_busy=true;document.getElementById('status').textContent='Book ban rahi hai - Har chapter ke samne spinner dekho...';setTransSpin(true,'Book ke liye translate ho raha hai...');try{if(target!=='original'){for(let i=0;i<chapters.length;i++){setChapterSpin(i,true,'Translating...');if(pageWise&&chapters[i].pagesText&&chapters[i].pagesText.length){chapters[i].translatedPages=await translatePageWise(chapters[i],target);chapters[i].translated=chapters[i].translatedPages.join('\n\n');}else{chapters[i].translated=await translateChunk(chapters[i].text||'',target);}setChapterSpin(i,false,'done');}}else{chapters.forEach(c=>{c.translated=c.text;c.translatedPages=c.pagesText||[c.text];});}const merged=await PDFLib.PDFDocument.create();const font=await merged.embedFont(PDFLib.StandardFonts.Helvetica); const urduFont=await loadUrduFont(merged);const bold=await merged.embedFont(PDFLib.StandardFonts.HelveticaBold);const italic=await merged.embedFont(PDFLib.StandardFonts.HelveticaOblique);function safeTxt(t){return cleanForPDF(t);}async function embedImageFromDataUrl(dataUrl,type){try{let res=await fetch(dataUrl);let buf=await res.arrayBuffer();if(type&&type.indexOf('png')>=0)return await merged.embedPng(buf);return await merged.embedJpg(buf);}catch(e){return null;}}
-if(window._bookCoverData){let img=await embedImageFromDataUrl(window._bookCoverData,window._bookCoverType);if(img){let pg=merged.addPage([595,842]);let iw=img.width,ih=img.height;let scale=Math.min(595/iw,520/ih);let dw=iw*scale,dh=ih*scale;let dx=(595-dw)/2,dy=842-40-dh;pg.drawImage(img,{x:dx,y:dy,width:dw,height:dh});pg.drawLine({start:{x:50,y:280},end:{x:545,y:280},thickness:2,color:PDFLib.rgb(0.31,0.27,0.9)});safeDraw(pg,safeTxt(bookName).slice(0,40),{x:50,y:240,size:28,font:bold});if(bookAuthor)safeDraw(pg,'By '+safeTxt(bookAuthor).slice(0,40),{x:50,y:210,size:13,font:italic});safeDraw(pg,'Chapter-Wise Professional Book',{x:50,y:185,size:11,font});safeDraw(pg,'Total Chapters: '+chapters.length+'  |  Language: '+target,{x:50,y:165,size:11,font});}else{let cover=merged.addPage([595,842]);safeDraw(cover,safeTxt(bookName).slice(0,40),{x:50,y:650,size:30,font:bold});if(bookAuthor)safeDraw(cover,'By '+safeTxt(bookAuthor).slice(0,40),{x:50,y:615,size:14,font:italic});safeDraw(cover,'Chapter-Wise Professional Book',{x:50,y:580,size:12,font});safeDraw(cover,'Total Chapters: '+chapters.length,{x:50,y:550,size:12,font});safeDraw(cover,'Language: '+target,{x:50,y:530,size:12,font});}}else{let cover=merged.addPage([595,842]);cover.drawLine({start:{x:50,y:700},end:{x:545,y:700},thickness:2,color:PDFLib.rgb(0.31,0.27,0.9)});safeDraw(cover,safeTxt(bookName).slice(0,40),{x:50,y:650,size:30,font:bold});if(bookAuthor)safeDraw(cover,'By '+safeTxt(bookAuthor).slice(0,40),{x:50,y:615,size:14,font:italic});safeDraw(cover,'Chapter-Wise Professional Book',{x:50,y:580,size:12,font});safeDraw(cover,'Total Chapters: '+chapters.length,{x:50,y:550,size:12,font});safeDraw(cover,'Language: '+target,{x:50,y:530,size:12,font});cover.drawLine({start:{x:50,y:500},end:{x:545,y:500},thickness:2,color:PDFLib.rgb(0.31,0.27,0.9)});}
-let toc=merged.addPage([595,842]);safeDraw(toc,'Table of Contents',{x:50,y:800,size:22,font:bold});toc.drawLine({start:{x:50,y:785},end:{x:545,y:785},thickness:1.5,color:PDFLib.rgb(0.8,0.8,0.8)});let y=750,pageNo=4;chapters.forEach((c,i)=>{let shortTitle=safeTxt(c.title).replace(/-Complete.*$/i,'').replace(/\.pdf$/i,'').trim();if(shortTitle.length>48)shortTitle=shortTitle.slice(0,48);let tLines=wrapText(shortTitle,52);safeDraw(toc,'Chapter '+(i+1),{x:50,y,size:11,font:bold});tLines.slice(0,2).forEach((tl,li)=>{safeDraw(toc,tl,{x:120,y:y-(li*14),size:11,font});});safeDraw(toc,'Page '+pageNo,{x:480,y,size:11,font});y-=26+(tLines.length>1?14:0);pageNo+=1+(c.pages||1)+(mode=='both'?(c.pages||1):0); /* V24: TOC ab original pages ke hisaab se, andaza nahi */});let pdfPageNo=3;for(let i=0;i<chapters.length;i++){let ch=chapters[i];setChapterSpin(i,true,'Book me likha ja raha hai...');
-if(ch.coverData){let cimg=await embedImageFromDataUrl(ch.coverData,ch.coverType);if(cimg){let cpg=merged.addPage([595,842]);let iw2=cimg.width,ih2=cimg.height;let sc2=Math.min(595/iw2,520/ih2);let dw2=iw2*sc2,dh2=ih2*sc2;let dx2=(595-dw2)/2,dy2=842-40-dh2;cpg.drawImage(cimg,{x:dx2,y:dy2,width:dw2,height:dh2});cpg.drawLine({start:{x:50,y:280},end:{x:545,y:280},thickness:2,color:PDFLib.rgb(0.31,0.27,0.9)});safeDraw(cpg,'CHAPTER '+(i+1),{x:50,y:240,size:13,font:bold,color:PDFLib.rgb(0.31,0.27,0.9)});safeDraw(cpg,safeTxt(ch.title).slice(0,50),{x:50,y:210,size:16,font:bold});pdfPageNo++;}}
-let div=merged.addPage([595,842]);pdfPageNo++;if(layout=='beautiful'){safeDraw(div,'CHAPTER '+(i+1),{x:50,y:520,size:12,font:bold,color:PDFLib.rgb(0.31,0.27,0.9)});div.drawLine({start:{x:50,y:505},end:{x:545,y:505},thickness:1,color:PDFLib.rgb(0.8,0.8,0.8)});let dTitle=safeTxt(ch.title).replace(/-Complete.*$/i,'').trim();let dLines=wrapText(dTitle,42);dLines.slice(0,3).forEach((dl,di)=>{safeDraw(div,dl,{x:50,y:470-(di*28),size:20,font:bold});});div.drawLine({start:{x:50,y:380},end:{x:150,y:380},thickness:2,color:PDFLib.rgb(0.31,0.27,0.9)});safeDraw(div,'Is chapter ka text agle page se shuru hoga.',{x:50,y:350,size:11,font:italic});safeDraw(div,safeTxt(bookName).slice(0,30),{x:50,y:30,size:9,font});}else{safeDraw(div,'CHAPTER '+(i+1),{x:50,y:720,size:14,font:bold});safeDraw(div,safeTxt(ch.title).slice(0,60),{x:50,y:680,size:20,font:bold});}
-if(mode!=='original'){
-// STRICT PAGE-BY-PAGE: Original Page N ka text SIRF usi ke book page par - Page 2 ki lines Page 1 par kabhi nahi aayengi.
-let pagesToWrite=null;if(pageWise&&ch.translatedPages&&ch.translatedPages.length){pagesToWrite=ch.translatedPages;}else{pagesToWrite=[ch.translated||ch.text||''];}
-for(let pi=0;pi<pagesToWrite.length;pi++){
-let rawPage=cleanOCRText(stripInvisible(pagesToWrite[pi]||''));
-if(!rawPage.trim())continue;
-// V24: Translated page par KOI page number / header-footer number NAHI. Sirf saaf justified text.
-let curPg=merged.addPage([595,842]);let yy=700;
-// V24: Har page ki lines = Original page ki lines (exact match)
-let targetLines=(ch.origLineCounts&&ch.origLineCounts[pi])||countWrappedLines(rawPage,68);
-let useComplex=needsComplexFont(rawPage);
-let pageFont=(useComplex&&urduFont)?urduFont:font;
-let matched=matchLines(rawPage,targetLines,68);
-// Agar lines zyada lambi hain to font chhota karo taake line tootay nahi
-let fSize=useComplex?13:11; let lineH=useComplex?26:21;
-for(let li=0;li<matched.length;li++){
-  let line=matched[li]; if(!line.trim()){yy-=lineH; continue;}
-  let isLast=(li==matched.length-1);
-  // Har line justify - aakhri line bhi justified jahan mumkin ho
-  drawJustifiedLine(curPg,line,50,yy,fSize,pageFont,isLast,false);
-  yy-=lineH;
+// ============ TRANSLATION ============
+async function translateOneChunk(chunk, srcLang, tgt) {
+  chunk = stripInvisible(chunk);
+  try {
+    let url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + srcLang + '&tl=' + tgt + '&dt=t&q=' + encodeURIComponent(chunk);
+    let r = await fetch(url);
+    let j = await r.json();
+    let out = '';
+    if (j && j[0]) j[0].forEach(x => { if (x && x[0]) out += x[0]; });
+    if (out && out.trim()) return stripInvisible(out);
+  } catch(e) {}
+  try {
+    let res = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(chunk) + '&langpair=' + srcLang + '|' + tgt);
+    let j = await res.json();
+    let tr = (j.responseData && j.responseData.translatedText) || '';
+    if (tr && tr.indexOf('PLEASE SELECT') < 0 && tr.indexOf('MYMEMORY WARNING') < 0) return stripInvisible(tr);
+  } catch(e) {}
+  return chunk;
 }
+
+async function translateChunk(text, target) {
+  if (!text.trim() || target == 'original') return text;
+  text = stripInvisible(text);
+  let srcLang = detectTextLang(text);
+  let map = { ur:'ur', en:'en', roman:'en', ar:'ar', hi:'hi', ps:'ps', fa:'fa', tr:'tr', fr:'fr', de:'de', es:'es', bn:'bn', zh:'zh-CN', ru:'ru' };
+  let tgt = map[target] || 'en';
+  if (target == 'roman') {
+    let tr = await translateChunk(text, 'en');
+    return tr;
+  }
+  if (srcLang == tgt) return text;
+  let out = '';
+  for (let i = 0; i < text.length; i += 450) {
+    let chunk = text.slice(i, i + 450);
+    if (!chunk.trim()) { out += chunk; continue; }
+    out += await translateOneChunk(chunk, srcLang, tgt) + ' ';
+    await new Promise(r => setTimeout(r, 120));
+  }
+  return stripInvisible(out);
 }
-if(mode!=='translated'){let buf=await ch.file.arrayBuffer();let src=await PDFLib.PDFDocument.load(buf);let pages=await merged.copyPages(src,src.getPageIndices());pages.forEach(p=>merged.addPage(p));pdfPageNo+=pages.length;}setChapterSpin(i,false,'done');}
-const bytes=await merged.save();let url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));let safeName=stripInvisible(bookName).replace(/[^\w\- ]/g,'')||'Meri Book';let txtContent='BOOK: '+bookName+'\nLanguage: '+target+' | STRICT Page-by-Page + JUSTIFY\n\n';chapters.forEach((c,i)=>{txtContent+='Chapter '+(i+1)+': '+c.title+' - Original Pages: '+(c.pages||0)+'\n';});chapters.forEach((c,i)=>{txtContent+='\n\n===== CHAPTER '+(i+1)+': '+c.title+' =====\n\n';if(c.translatedPages&&c.translatedPages.length){c.translatedPages.forEach((pg,pi)=>{txtContent+='\n--- Original Page '+(pi+1)+' ---\n'+pg+'\n';});}else{txtContent+=(c.translated||c.text||'');}});let txtUrl=URL.createObjectURL(new Blob([txtContent],{type:'text/plain;charset=utf-8'}));document.getElementById('downloadArea').innerHTML='<a href="'+url+'" download="'+safeName+'.pdf" class="block text-center bg-green-600 text-white py-3 rounded-xl font-bold mt-3">Download '+safeName+'.pdf - PRO Book ('+chapters.length+' Chapters, Flowing)</a><a href="'+txtUrl+'" download="'+safeName+'-Translated.txt" class="block text-center bg-slate-800 text-white py-2 rounded-xl font-bold mt-2 text-sm">Translated Text (.TXT) Bhi Download Karo</a>';setTransSpin(false,'Book tayyar ✓');_busy=false;document.getElementById('status').innerHTML='PRO BOOK TAYYAR HAI! '+chapters.length+' Chapters + Flowing Layout - Har page FULL.';}catch(e){setTransSpin(false,'');_busy=false;document.getElementById('status').innerHTML='Error: '+e.message;}}
-document.getElementById('pdfInput').addEventListener('change',async e=>{let files=Array.from(e.target.files);for(let f of files){let buf=await f.arrayBuffer();let pdf=await pdfjsLib.getDocument({data:buf}).promise;chapters.push({file:f,title:f.name.replace(/\.pdf$/i,''),pages:pdf.numPages,text:'',pagesText:[],ocrDone:false});}renderChapters();});
-let bc=document.getElementById('bookCover');if(bc)bc.addEventListener('change',onBookCoverChange);
-renderChapters();try{setPreviewView(localStorage.getItem('previewView')||'translated');}catch(e){}try{let ul=localStorage.getItem('uiLang')||'roman';setUILang(ul);}catch(e){}
-</script></body></html>
+
+async function translatePageWise(ch, target) {
+  let srcPages = ch.pagesText || [ch.text || ''];
+  let outPages = [];
+  for (let pi = 0; pi < srcPages.length; pi++) {
+    let pgTxt = cleanOCRText(stripInvisible(srcPages[pi] || ''));
+    if (!pgTxt.trim()) { outPages.push(''); continue; }
+    outPages.push(await translateChunk(pgTxt, target));
+  }
+  return outPages;
+}
+
+// ============ PREVIEW SYNC ============
+function rebuildSyncedPages() {
+  _ocrPages = [];
+  _transPagesSync = [];
+  chapters.forEach((ch, ci) => {
+    let op = ch.pagesText || [];
+    let tp = ch.translatedPages || [];
+    let n = Math.max(op.length, tp.length, 1);
+    for (let pi = 0; pi < n; pi++) {
+      _ocrPages.push({ ch: ci, pi: pi, text: (op[pi] || '') });
+      _transPagesSync.push({ ch: ci, pi: pi, text: (tp[pi] || '') });
+    }
+  });
+  if (!_ocrPages.length) {
+    _ocrPages = [{ ch: 0, pi: 0, text: document.getElementById('ocrText') ? document.getElementById('ocrText').value : '' }];
+    _transPagesSync = [{ ch: 0, pi: 0, text: document.getElementById('translatedPreview') ? document.getElementById('translatedPreview').value : '' }];
+  }
+  _syncedPageIdx = Math.min(_syncedPageIdx, _ocrPages.length - 1);
+  renderSyncedPage();
+}
+
+function renderSyncedPage() {
+  let oc = document.getElementById('ocrText');
+  let dv = document.getElementById('translatedBookView');
+  let lb = document.getElementById('previewPageLabel');
+  let total = _ocrPages.length;
+  let cur = _ocrPages[_syncedPageIdx] || { ch:0, pi:0, text:'' };
+  let curT = _transPagesSync[_syncedPageIdx] || { ch:0, pi:0, text:'' };
+  if (oc) oc.value = cur.text;
+  if (dv) dv.textContent = curT.text || 'Abhi translate nahi hua.';
+  let label = 'Page ' + (_syncedPageIdx + 1) + ' / ' + total + ' — Chapter ' + (cur.ch + 1) + ' — Original Page ' + (cur.pi + 1);
+  if (lb) lb.textContent = label;
+  fixContentDir();
+}
+
+function syncedPage(dir) {
+  if (!_ocrPages.length) rebuildSyncedPages();
+  _syncedPageIdx = Math.max(0, Math.min(_ocrPages.length - 1, _syncedPageIdx + dir));
+  renderSyncedPage();
+}
+
+function setPreviewView(mode) {
+  let ow = document.getElementById('origPreviewWrap');
+  let tw = document.getElementById('transPreviewWrap');
+  let grid = document.getElementById('previewGrid');
+  let bT = document.getElementById('viewTransBtn');
+  let bB = document.getElementById('viewBothBtn');
+  let bO = document.getElementById('viewOrigBtn');
+  [bT, bB, bO].forEach(b => { if (b) b.className = 'bg-slate-200 px-3 py-1.5 rounded-full font-bold'; });
+  if (mode == 'translated') {
+    if (ow) ow.classList.add('hidden');
+    if (tw) tw.classList.remove('hidden');
+    if (grid) grid.className = 'grid md:grid-cols-1 gap-3 mt-2';
+    if (bT) bT.className = 'bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';
+  } else if (mode == 'both') {
+    if (ow) ow.classList.remove('hidden');
+    if (tw) tw.classList.remove('hidden');
+    if (grid) grid.className = 'grid md:grid-cols-2 gap-3 mt-2';
+    if (bB) bB.className = 'bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';
+  } else {
+    if (ow) ow.classList.remove('hidden');
+    if (tw) tw.classList.add('hidden');
+    if (grid) grid.className = 'grid md:grid-cols-1 gap-3 mt-2';
+    if (bO) bO.className = 'bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';
+  }
+  try { localStorage.setItem('previewView', mode); } catch(e) {}
+  fixContentDir();
+}
+
+// ============ UI HELPERS ============
+function setTransSpin(on, msg) {
+  let el = document.getElementById('transSpin');
+  if (el) { if (on) el.classList.add('spinning'); else el.classList.remove('spinning'); }
+  let lb = document.getElementById('transSpinLabel');
+  if (lb) lb.textContent = msg || '';
+}
+
+function setChapterSpin(i, on, msg) {
+  let el = document.getElementById('chapSpin-' + i);
+  if (el) {
+    el.className = 'chapSpin ' + (on ? 'spinning' : 'done');
+    el.textContent = on ? '⟳' : (msg == 'done' ? '✅' : '○');
+  }
+  let lb = document.getElementById('chapStatus-' + i);
+  if (lb) lb.textContent = on ? 'Kaam ho raha hai...' : (msg == 'done' ? 'Mukammal ✅' : '');
+  let row = document.getElementById('chapRow-' + i);
+  if (row) {
+    if (on) row.classList.add('active');
+    else row.classList.remove('active');
+  }
+}
+
+function toggleBoxSize(id) {
+  let el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('big');
+}
+
+function resetHang() {
+  _busy = false;
+  _cancel = true;
+  chapters.forEach((c, i) => setChapterSpin(i, false, ''));
+  let st = document.getElementById('status');
+  if (st) st.textContent = 'Hang Reset ho gaya — Ab dobara try karo.';
+  setTransSpin(false, '');
+}
+
+// ============ CHAPTER MANAGEMENT ============
+function sortByName() { chapters.sort((a, b) => a.title.localeCompare(b.title)); renderChapters(); }
+function clearAll() {
+  chapters = [];
+  document.getElementById('ocrText').value = '';
+  document.getElementById('translatedPreview').value = '';
+  _previewPages = [];
+  renderSyncedPage();
+  renderChapters();
+}
+
+function updateTOC() {
+  let toc = document.getElementById('tocPreview');
+  if (!toc) return;
+  if (!chapters.length) { toc.classList.add('hidden'); return; }
+  toc.classList.remove('hidden');
+  document.getElementById('tocList').textContent = chapters.map((c, i) => 'Chapter ' + (i + 1) + ': ' + c.title + ' — ' + (c.pages || 0) + ' pages').join('\n');
+}
+
+function renderChapters() {
+  let list = document.getElementById('fileList');
+  if (!list) return;
+  if (!chapters.length) {
+    list.innerHTML = '<p class="text-sm text-slate-500">Koi chapter nahi — PDF add karein.</p>';
+    updateTOC();
+    return;
+  }
+  list.innerHTML = '';
+  chapters.forEach((ch, i) => {
+    let div = document.createElement('div');
+    div.id = 'chapRow-' + i;
+    div.className = 'chapterRow ' + (ch.ocrDone ? 'done' : '');
+    div.innerHTML = 
+      '<div class="flex items-center gap-2 flex-wrap">' +
+      '<div class="chapNum">' + (i + 1) + '</div>' +
+      '<span id="chapSpin-' + i + '" class="chapSpin">' + (ch.ocrDone ? '✅' : '○') + '</span>' +
+      '<div class="flex-1 min-w-[200px]">' +
+      '<input value="' + ch.title.replace(/"/g, '&quot;') + '" onchange="chapters[' + i + '].title=this.value;updateTOC()" class="w-full border p-1 rounded font-bold">' +
+      '<p class="text-xs text-slate-500">' + (ch.pages || 0) + ' pages — ' + (ch.ocrDone ? 'OCR Done ✅' : 'OCR Baqi') + ' <span id="chapStatus-' + i + '" class="text-xs"></span></p>' +
+      '</div>' +
+      '<button onclick="runOCROne(' + i + ')" class="bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-bold">🔍 OCR</button>' +
+      '<button onclick="moveChapter(' + i + ',-1)" class="bg-slate-200 px-2 py-1 rounded text-xs">↑</button>' +
+      '<button onclick="moveChapter(' + i + ',1)" class="bg-slate-200 px-2 py-1 rounded text-xs">↓</button>' +
+      '<button onclick="removeChapter(' + i + ')" class="bg-red-100 px-2 py-1 rounded text-xs">✕</button>' +
+      '</div>';
+    list.appendChild(div);
+  });
+  updateTOC();
+}
+
+function moveChapter(i, dir) {
+  let j = i + dir;
+  if (j < 0 || j >= chapters.length) return;
+  let tmp = chapters[i];
+  chapters[i] = chapters[j];
+  chapters[j] = tmp;
+  renderChapters();
+}
+
+function removeChapter(i) { chapters.splice(i, 1); renderChapters(); }
+
+// ============ OCR ============
+async function getChapterText(ch, useOCR, onPage) {
+  let buf = await ch.file.arrayBuffer();
+  let pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let all = '';
+  let pagesText = [];
+  let scale = parseFloat(document.getElementById('ocrQuality') ? document.getElementById('ocrQuality').value : '2');
+  let lang = document.getElementById('ocrLang') ? document.getElementById('ocrLang').value : 'urd';
+  
+  for (let p = 1; p <= pdf.numPages; p++) {
+    if (_cancel) break;
+    let page = await pdf.getPage(p);
+    if (onPage) onPage(p, pdf.numPages);
+    let pageTxt = '';
+    
+    if (!useOCR) {
+      try {
+        let tc = await page.getTextContent();
+        let t = tc.items.map(x => x.str).join(' ');
+        if (t.trim().length > 30) pageTxt = stripInvisible(t);
+      } catch(e) {}
+    }
+    
+    if (!pageTxt) {
+      let vp = page.getViewport({ scale: scale });
+      let c = document.createElement('canvas');
+      c.width = vp.width;
+      c.height = vp.height;
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      try {
+        let r = await Tesseract.recognize(c, lang, { logger: () => {} });
+        pageTxt = stripInvisible(r.data.text || '');
+      } catch(e) {}
+    }
+    
+    pageTxt = cleanOCRText(pageTxt);
+    pagesText.push(pageTxt);
+    all += pageTxt + '\n\n--- Page Break (Original Page ' + p + ') ---\n\n';
+    await new Promise(r => setTimeout(r, 10));
+  }
+  
+  // V25: Remove headers/footers
+  pagesText = stripHeaderFooter(pagesText);
+  ch.pagesText = pagesText;
+  ch.origLineCounts = pagesText.map(p => countWrappedLines(p, 68));
+  
+  let all2 = '';
+  pagesText.forEach((pp, pi) => {
+    all2 += pp + '\n\n--- Page Break (Original Page ' + (pi + 1) + ') ---\n\n';
+  });
+  return stripInvisible(all2);
+}
+
+async function runOCROne(i) { await runFullOCR(i); }
+
+async function runFullOCR(onlyIdx = null) {
+  if (_busy) { alert('Kaam chal raha hai'); return; }
+  if (!chapters.length) { alert('Pehle Chapters add karein'); return; }
+  let indices = onlyIdx != null ? [onlyIdx] : chapters.map((_, i) => i);
+  let totalPages = indices.reduce((s, i) => s + (chapters[i].pages || 0), 0);
+  _busy = true;
+  _cancel = false;
+  document.getElementById('status').textContent = 'OCR ho raha hai...';
+  
+  for (let idx of indices) {
+    if (_cancel) break;
+    setChapterSpin(idx, true, 'OCR...');
+    let ch = chapters[idx];
+    let txt = await getChapterText(ch, true, (p, tot) => {
+      document.getElementById('ocrStatus').textContent = 'Chapter ' + (idx + 1) + ' — Page ' + p + '/' + tot;
+    });
+    ch.text = txt;
+    ch.ocrDone = true;
+    setChapterSpin(idx, false, 'done');
+    renderChapters();
+  }
+  
+  let combined = '';
+  chapters.forEach((c, i) => {
+    combined += '\n\n===== CHAPTER ' + (i + 1) + ': ' + c.title + ' =====\n\n' + (c.text || '');
+  });
+  document.getElementById('ocrText').value = stripInvisible(combined);
+  rebuildSyncedPages();
+  fixContentDir();
+  _busy = false;
+  renderChapters();
+  document.getElementById('ocrStatus').innerHTML = _cancel ? 'Roka gaya.' : 'ORIGINAL OCR MUKAMMAL! ' + indices.length + ' chapter(s), ' + totalPages + ' pages.';
+  document.getElementById('status').textContent = 'OCR mukammal.';
+}
+
+async function extractAllText() {
+  if (_busy) { alert('Kaam chal raha hai'); return; }
+  if (!chapters.length) { alert('Pehle Chapters add karein'); return; }
+  _cancel = false;
+  for (let i = 0; i < chapters.length; i++) {
+    setChapterSpin(i, true, 'Text...');
+    let ch = chapters[i];
+    ch.text = await getChapterText(ch, false, null);
+    ch.ocrDone = true;
+    setChapterSpin(i, false, 'done');
+  }
+  let combined = '';
+  chapters.forEach((c, i) => {
+    combined += '\n\n===== CHAPTER ' + (i + 1) + ': ' + c.title + ' =====\n\n' + (c.text || '');
+  });
+  document.getElementById('ocrText').value = stripInvisible(combined);
+  rebuildSyncedPages();
+  renderChapters();
+  document.getElementById('ocrStatus').innerHTML = 'Text nikal liya gaya (Fast).';
+}
+
+// ============ PREVIEW ============
+async function translatePreview() {
+  let target = document.getElementById('targetLang').value;
+  if (target == 'original') {
+    document.getElementById('translatedPreview').value = 'Original selected — translate nahi hoga.';
+    rebuildSyncedPages();
+    return;
+  }
+  let src = cleanOCRText(document.getElementById('ocrText').value || '');
+  if (!src.trim()) { alert('Pehle OCR karein'); return; }
+  
+  setTransSpin(true, 'Translating...');
+  document.getElementById('translatedPreview').value = 'Translating... Page-Wise ho raha hai.';
+  
+  let tr = '';
+  if (chapters.length && chapters[0].pagesText && chapters[0].pagesText.length) {
+    let all = [];
+    for (let ci = 0; ci < chapters.length; ci++) {
+      setChapterSpin(ci, true, 'Translating...');
+      let pgTr = await translatePageWise(chapters[ci], target);
+      chapters[ci].translatedPages = pgTr;
+      setChapterSpin(ci, false, 'done');
+      all.push(pgTr.join('\n\n--- Page Break ---\n\n'));
+    }
+    tr = all.join('\n\n===== NEXT CHAPTER =====\n\n');
+  } else {
+    tr = await translateChunk(src, target);
+  }
+  
+  document.getElementById('translatedPreview').value = tr;
+  fixContentDir();
+  rebuildSyncedPages();
+  setTransSpin(false, 'Translation mukammal ✓');
+}
+
+function swapPreview() {
+  let t = document.getElementById('targetLang');
+  let cur = t.value;
+  t.value = (cur == 'ur' ? 'en' : (cur == 'en' ? 'ur' : cur));
+  translatePreview();
+}
+
+// ============ BOOK MAKING ============
+async function makeBook() {
+  if (!chapters.length) { alert('Pehle Chapters add karein'); return; }
+  let hasText = chapters.some(c => c.text && c.text.trim().length > 20);
+  if (!hasText) { await extractAllText(); }
+  
+  let target = document.getElementById('targetLang').value;
+  let mode = document.getElementById('bookMode').value;
+  let layout = document.getElementById('bookLayout') ? document.getElementById('bookLayout').value : 'beautiful';
+  let pageWise = document.getElementById('pageWise') ? document.getElementById('pageWise').checked : true;
+  let bookName = stripInvisible(document.getElementById('bookName').value || 'Meri Book');
+  let bookAuthor = document.getElementById('bookAuthor') ? stripInvisible(document.getElementById('bookAuthor').value) : '';
+  
+  _busy = true;
+  document.getElementById('status').textContent = 'Book ban rahi hai...';
+  setTransSpin(true, 'Book ke liye translate ho raha hai...');
+  
+  try {
+    // Translate all chapters
+    if (target != 'original') {
+      for (let i = 0; i < chapters.length; i++) {
+        setChapterSpin(i, true, 'Translating...');
+        if (pageWise && chapters[i].pagesText && chapters[i].pagesText.length) {
+          chapters[i].translatedPages = await translatePageWise(chapters[i], target);
+          chapters[i].translated = chapters[i].translatedPages.join('\n\n');
+        } else {
+          chapters[i].translated = await translateChunk(chapters[i].text || '', target);
+        }
+        setChapterSpin(i, false, 'done');
+      }
+    } else {
+      chapters.forEach(c => {
+        c.translated = c.text;
+        c.translatedPages = c.pagesText || [c.text];
+      });
+    }
+    
+    const merged = await PDFLib.PDFDocument.create();
+    const font = await merged.embedFont(PDFLib.StandardFonts.Helvetica);
+    const urduFont = await loadUrduFont(merged);
+    const bold = await merged.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    const italic = await merged.embedFont(PDFLib.StandardFonts.HelveticaOblique);
+    
+    // ===== COVER PAGE =====
+    let cover = merged.addPage([595, 842]);
+    cover.drawLine({ start: { x: 50, y: 700 }, end: { x: 545, y: 700 }, thickness: 2, color: PDFLib.rgb(0.31, 0.27, 0.9) });
+    safeDraw(cover, bookName.slice(0, 40), { x: 50, y: 650, size: 30, font: bold });
+    if (bookAuthor) safeDraw(cover, 'By ' + bookAuthor.slice(0, 40), { x: 50, y: 615, size: 14, font: italic });
+    safeDraw(cover, 'Professional Chapter-Wise Book', { x: 50, y: 580, size: 12, font });
+    safeDraw(cover, 'Total Chapters: ' + chapters.length, { x: 50, y: 550, size: 12, font });
+    safeDraw(cover, 'Language: ' + target, { x: 50, y: 530, size: 12, font });
+    cover.drawLine({ start: { x: 50, y: 500 }, end: { x: 545, y: 500 }, thickness: 2, color: PDFLib.rgb(0.31, 0.27, 0.9) });
+    
+    // ===== TOC =====
+    let toc = merged.addPage([595, 842]);
+    safeDraw(toc, 'Table of Contents', { x: 50, y: 800, size: 22, font: bold });
+    toc.drawLine({ start: { x: 50, y: 785 }, end: { x: 545, y: 785 }, thickness: 1.5, color: PDFLib.rgb(0.8, 0.8, 0.8) });
+    let y = 750;
+    chapters.forEach((c, i) => {
+      let shortTitle = c.title.replace(/-Complete.*$/i, '').replace(/\.pdf$/i, '').trim();
+      if (shortTitle.length > 48) shortTitle = shortTitle.slice(0, 48);
+      let tLines = wrapText(shortTitle, 52);
+      safeDraw(toc, 'Chapter ' + (i + 1), { x: 50, y, size: 11, font: bold });
+      tLines.slice(0, 2).forEach((tl, li) => {
+        safeDraw(toc, tl, { x: 120, y: y - (li * 14), size: 11, font });
+      });
+      y -= 26 + (tLines.length > 1 ? 14 : 0);
+    });
+    
+    // ===== CHAPTER PAGES =====
+    for (let i = 0; i < chapters.length; i++) {
+      let ch = chapters[i];
+      setChapterSpin(i, true, 'Book me likha ja raha hai...');
+      
+      // Chapter divider
+      let div = merged.addPage([595, 842]);
+      if (layout == 'beautiful') {
+        safeDraw(div, 'CHAPTER ' + (i + 1), { x: 50, y: 520, size: 12, font: bold, color: PDFLib.rgb(0.31, 0.27, 0.9) });
+        div.drawLine({ start: { x: 50, y: 505 }, end: { x: 545, y: 505 }, thickness: 1, color: PDFLib.rgb(0.8, 0.8, 0.8) });
+        let dTitle = ch.title.replace(/-Complete.*$/i, '').trim();
+        let dLines = wrapText(dTitle, 42);
+        dLines.slice(0, 3).forEach((dl, di) => {
+          safeDraw(div, dl, { x: 50, y: 470 - (di * 28), size: 20, font: bold });
+        });
+        div.drawLine({ start: { x: 50, y: 380 }, end: { x: 150, y: 380 }, thickness: 2, color: PDFLib.rgb(0.31, 0.27, 0.9) });
+      } else {
+        safeDraw(div, 'CHAPTER ' + (i + 1), { x: 50, y: 720, size: 14, font: bold });
+        safeDraw(div, ch.title.slice(0, 60), { x: 50, y: 680, size: 20, font: bold });
+      }
+      
+      // V25: EXACT PAGE-BY-PAGE with EXACT LINE COUNT and TRUE JUSTIFICATION
+      if (mode !== 'original') {
+        let pagesToWrite = null;
+        if (pageWise && ch.translatedPages && ch.translatedPages.length) {
+          pagesToWrite = ch.translatedPages;
+        } else {
+          pagesToWrite = [ch.translated || ch.text || ''];
+        }
+        
+        for (let pi = 0; pi < pagesToWrite.length; pi++) {
+          let rawPage = cleanOCRText(stripInvisible(pagesToWrite[pi] || ''));
+          if (!rawPage.trim()) continue;
+          
+          let curPg = merged.addPage([595, 842]);
+          let yy = 700;
+          
+          // V25: Get EXACT target line count from original page
+          let targetLines = (ch.origLineCounts && ch.origLineCounts[pi]) || countWrappedLines(rawPage, 68);
+          
+          let useComplex = needsComplexFont(rawPage);
+          let pageFont = (useComplex && urduFont) ? urduFont : font;
+          let isRTL = useComplex;
+          
+          // V25: Match lines EXACTLY
+          let matched = matchLines(rawPage, targetLines, 68);
+          
+          let fSize = useComplex ? 13 : 11;
+          let lineH = useComplex ? 26 : 21;
+          let targetWidth = 495;
+          
+          for (let li = 0; li < matched.length; li++) {
+            let line = matched[li];
+            if (!line.trim()) { yy -= lineH; continue; }
+            let isLast = (li == matched.length - 1);
+            // V25: TRUE JUSTIFICATION — both sides aligned
+            drawJustifiedLine(curPg, line, 50, yy, fSize, pageFont, isLast, false, targetWidth, isRTL);
+            yy -= lineH;
+          }
+        }
+      }
+      
+      // Original pages (if mode = both)
+      if (mode !== 'translated') {
+        let buf = await ch.file.arrayBuffer();
+        let src = await PDFLib.PDFDocument.load(buf);
+        let pages = await merged.copyPages(src, src.getPageIndices());
+        pages.forEach(p => merged.addPage(p));
+      }
+      
+      setChapterSpin(i, false, 'done');
+    }
+    
+    // ===== SAVE =====
+    const bytes = await merged.save();
+    let url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    let safeName = bookName.replace(/[^\w\- ]/g, '') || 'Meri Book';
+    
+    // TXT export
+    let txtContent = 'BOOK: ' + bookName + '\nLanguage: ' + target + '\nPages: ' + chapters.reduce((s, c) => s + (c.pages || 0), 0) + '\n\n';
+    chapters.forEach((c, i) => {
+      txtContent += '\n\n===== CHAPTER ' + (i + 1) + ': ' + c.title + ' =====\n\n';
+      if (c.translatedPages && c.translatedPages.length) {
+        c.translatedPages.forEach((pg, pi) => {
+          txtContent += '\n--- Original Page ' + (pi + 1) + ' ---\n' + pg + '\n';
+        });
+      } else {
+        txtContent += (c.translated || c.text || '');
+      }
+    });
+    
+    let txtUrl = URL.createObjectURL(new Blob([txtContent], { type: 'text/plain;charset=utf-8' }));
+    
+    document.getElementById('downloadArea').innerHTML = 
+      '<a href="' + url + '" download="' + safeName + '.pdf" class="block text-center bg-green-600 text-white py-3 rounded-xl font-bold mt-3">⬇️ Download ' + safeName + '.pdf (' + chapters.length + ' Chapters)</a>' +
+      '<a href="' + txtUrl + '" download="' + safeName + '-Translated.txt" class="block text-center bg-slate-800 text-white py-2 rounded-xl font-bold mt-2 text-sm">⬇️ Translated Text (.TXT)</a>';
+    
+    setTransSpin(false, 'Book tayyar ✓');
+    _busy = false;
+    document.getElementById('status').innerHTML = '✅ PRO BOOK TAYYAR HAI! ' + chapters.length + ' Chapters — Exact Pages + Exact Lines + True Justification';
+    
+  } catch(e) {
+    setTransSpin(false, '');
+    _busy = false;
+    document.getElementById('status').innerHTML = '❌ Error: ' + e.message;
+    console.error(e);
+  }
+}
+
+// ============ FILE INPUT ============
+document.getElementById('pdfInput').addEventListener('change', async e => {
+  let files = Array.from(e.target.files);
+  for (let f of files) {
+    let buf = await f.arrayBuffer();
+    let pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    chapters.push({
+      file: f,
+      title: f.name.replace(/\.pdf$/i, ''),
+      pages: pdf.numPages,
+      text: '',
+      pagesText: [],
+      ocrDone: false
+    });
+  }
+  renderChapters();
+});
+
+document.getElementById('bookCover').addEventListener('change', async e => {
+  let f = e.target.files[0];
+  if (!f) return;
+  let reader = new FileReader();
+  reader.onload = () => {
+    window._bookCoverData = reader.result;
+    window._bookCoverType = f.type;
+    document.getElementById('bookCoverPreview').innerHTML = 'Cover lag gaya: ' + f.name;
+  };
+  reader.readAsDataURL(f);
+});
+
+// ============ INIT ============
+renderChapters();
+try { setPreviewView(localStorage.getItem('previewView') || 'translated'); } catch(e) {}
+try { let ul = localStorage.getItem('uiLang') || 'roman'; setUILang(ul); } catch(e) {}
+</script>
+</body>
+</html>
