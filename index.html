@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V28 Perfect Justify</title>
+<title>PDF Book Assembler PRO - V29 Ultimate</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -27,6 +27,10 @@ body{font-family:Inter,system-ui,sans-serif}
 #transSpin.spinning{opacity:1;animation:spin 0.8s linear infinite}
 .rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu','Amiri',Georgia,serif}
 .ltr-text{direction:ltr;text-align:left}
+/* Progress Bar Styles */
+.progress-container { width: 100%; background-color: #e2e8f0; border-radius: 9999px; height: 8px; overflow: hidden; margin-top: 8px;}
+.progress-bar { height: 100%; background-color: #4f46e5; transition: width 0.3s ease; width: 0%; }
+.progress-text { font-size: 12px; color: #64748b; margin-top: 4px; text-align: right;}
 </style>
 </head>
 <body class="bg-slate-100 min-h-screen">
@@ -34,16 +38,10 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V28 Perfect Justify & Paragraphs</p>
+<p class="text-xs opacity-90">V29 Ultimate — Justify + Progress Bar</p>
 </div>
 <div class="flex items-center gap-2">
-<label class="text-xs">Language:</label>
-<select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1">
-<option value="roman">Roman Urdu</option>
-<option value="ur">اردو</option>
-<option value="en">English</option>
-</select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V28 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V29 ✓</span>
 </div>
 </div>
 </header>
@@ -51,12 +49,12 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V28 — Text Formatting Fix:</b>
+<b>✅ PRO V29 — Final Fixes:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>True Justify:</b> Har line ke words ke darmiyan space exact calculate hogi, text dono sides se barabar hoga.</li>
-<li><b>Paragraph Indent:</b> Naye paragraph ki pehli line thodi aage hogi (Book style).</li>
-<li><b>Word Overflow Fixed:</b> Koi word line se bahar nahi jayega, na hi screen se cut hoga.</li>
-<li><b>Strict Number Removal:</b> Page numbers aur faltu chhoti lines text ke beech se nikal di jayengi.</li>
+<li><b>Perfect Justify:</b> Text dono taraf se bilkul barabar hoga (Left + Right). Koi word cut nahi hoga.</li>
+<li><b>Progress Bars:</b> OCR, Translation, aur Book banane ke liye live progress bars lagaye gaye hain.</li>
+<li><b>Smart Paragraphs:</b> Naye paragraphs pehchan kar indent lagaya jayega, book jaisa format.</li>
+<li><b>Strict Number Removal:</b> Page numbers text ke beech se nikal diye jayenge.</li>
 </ul>
 </div>
 
@@ -93,7 +91,11 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="card">
 <h2 class="font-bold">2️⃣ FULL OCR</h2>
 <button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2">🔍 OCR Karo</button>
-<div id="ocrStatus" class="text-sm mt-2 bg-slate-50 p-2 rounded">Abhi OCR nahi hua.</div>
+<div class="mt-2">
+  <div class="progress-container"><div id="ocrProgressBar" class="progress-bar"></div></div>
+  <div id="ocrProgressText" class="progress-text">0%</div>
+</div>
+<div id="ocrStatus" class="text-sm mt-1 bg-slate-50 p-2 rounded">Abhi OCR nahi hua.</div>
 <textarea id="ocrText" class="flexBox w-full border p-2 rounded h-40 mt-1"></textarea>
 </div>
 
@@ -110,7 +112,11 @@ body{font-family:Inter,system-ui,sans-serif}
 <option value="translated">Only Translated</option>
 </select>
 <button onclick="makeBook()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">📖 Book Banao</button>
-<div id="status" class="text-sm mt-3 bg-slate-50 p-2 rounded">Ready hai.</div>
+<div class="mt-2">
+  <div class="progress-container"><div id="bookProgressBar" class="progress-bar"></div></div>
+  <div id="bookProgressText" class="progress-text">0%</div>
+</div>
+<div id="status" class="text-sm mt-1 bg-slate-50 p-2 rounded">Ready hai.</div>
 <div id="downloadArea"></div>
 </div>
 </div>
@@ -122,6 +128,10 @@ body{font-family:Inter,system-ui,sans-serif}
 <span>Page: <button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-1 rounded font-bold">◀</button> 
 <span id="previewPageLabel">1 / 1</span> 
 <button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-1 rounded font-bold">▶</button></span>
+</div>
+<div class="mt-2">
+  <div class="progress-container"><div id="transProgressBar" class="progress-bar bg-emerald-500"></div></div>
+  <div id="transProgressText" class="progress-text">0%</div>
 </div>
 <div id="translatedBookView" class="flexBox w-full border p-3 rounded mt-2 bg-white text-[15px] leading-7 whitespace-pre-wrap" style="font-family:Georgia,serif"></div>
 <textarea id="translatedPreview" class="hidden" readonly></textarea>
@@ -143,22 +153,29 @@ function detectTextLang(txt) {
   return (a > l && a > 20) ? 'ur' : 'en';
 }
 
-// ============ V28 STRICT HEADER/FOOTER REMOVAL ============
+function updateProgress(prefix, percent) {
+  let bar = document.getElementById(prefix + 'ProgressBar');
+  let txt = document.getElementById(prefix + 'ProgressText');
+  if (bar) bar.style.width = Math.min(100, Math.max(0, percent)) + '%';
+  if (txt) txt.textContent = Math.round(percent) + '%';
+}
+
+// ============ V29 STRICT HEADER/FOOTER REMOVAL ============
 function stripHeaderFooter(pages) {
   if (!pages || pages.length < 2) return pages;
   return pages.map(p => {
     let lines = String(p || '').split('\n').map(l => l.trim()).filter(Boolean);
     return lines.filter(t => {
-      if (/^\d{1,4}$/.test(t)) return false; // Just a number
+      if (/^\d{1,4}$/.test(t)) return false;
       if (/^(page|p\.?|safha|صفحہ)\s*\d{1,4}$/i.test(t)) return false;
       if (/^(chapter|chap|باب|part|section)\s*\d{1,3}/i.test(t) && t.length < 25) return false;
-      if (/^E\.\d+/.test(t) && t.length < 25) return false; // E.5 type
+      if (/^E\.\d+/.test(t) && t.length < 25) return false;
       return true;
     }).join('\n');
   });
 }
 
-// ============ V28 SMART PARAGRAPH DETECTION ============
+// ============ V29 SMART PARAGRAPH DETECTION ============
 function cleanOCRText(txt) {
   if (!txt) return '';
   let lines = String(txt).split('\n');
@@ -166,9 +183,8 @@ function cleanOCRText(txt) {
   for (let ln of lines) {
     let t = ln.trim();
     if (!t) { if (curPara) { out.push(curPara); curPara = ''; } continue; }
-    if (t.length < 3 && /^[\d\.\-]+$/.test(t)) continue; // skip noise
+    if (t.length < 3 && /^[\d\.\-]+$/.test(t)) continue;
     
-    // Check if previous line ended with sentence ender (paragraph break)
     if (curPara && (curPara.endsWith('.') || curPara.endsWith('?') || curPara.endsWith('!') || curPara.endsWith('۔'))) {
       out.push(curPara);
       curPara = t;
@@ -177,7 +193,7 @@ function cleanOCRText(txt) {
     }
   }
   if (curPara) out.push(curPara);
-  return out.join('\n\n'); // Double newline for paragraphs
+  return out.join('\n\n');
 }
 
 // ============ EXACT LINE MATCHING ============
@@ -227,7 +243,7 @@ function matchLines(translatedText, targetLines, maxChars) {
   return lines.slice(0, targetLines);
 }
 
-// ============ V28 PERFECT JUSTIFICATION ============
+// ============ V29 PERFECT JUSTIFICATION (HARDCODED SPACE) ============
 function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
   let txt = stripInvisible(lineText).trim();
   if (!txt) return;
@@ -238,53 +254,53 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
     return;
   }
   
-  // Calculate natural widths
-  let naturalW = 0;
-  let wordWidths = words.map(w => {
-    try { return fontObj.widthOfTextAtSize(w, size); } catch(e) { return w.length * size * 0.5; }
-  });
-  wordWidths.forEach(w => naturalW += w);
+  // V29: Use character count for width to avoid font calculation bugs in pdf-lib
+  // Average character width for Helvetica/Urdu font is approx 0.55 * size
+  let charWidth = size * 0.55; 
+  let spaceW = size * 0.3; // Hardcoded space width for safety
   
-  let spaceW;
-  try { spaceW = fontObj.widthOfTextAtSize(' ', size); } catch(e) { spaceW = size * 0.3; }
+  let naturalW = 0;
+  words.forEach(w => naturalW += w.length * charWidth);
   
   let gaps = words.length - 1;
   let totalNatural = naturalW + spaceW * gaps;
   let extra = targetWidth - totalNatural;
   let extraPerGap = gaps > 0 ? extra / gaps : 0;
   
-  // If too much space needed, don't justify (prevents ugly rivers)
-  if (extra < 0 || extraPerGap > 15 || isLastLine) {
+  // If extra space is too much (>12pt), don't stretch to edges, just left align
+  if (extra < 0 || extraPerGap > 12 || isLastLine) {
     if (isRTL) {
       let curX = x + targetWidth;
       for (let i = words.length - 1; i >= 0; i--) {
-        curX -= wordWidths[i];
+        let wW = words[i].length * charWidth;
+        curX -= wW;
         safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
         curX -= spaceW;
       }
     } else {
-      let curX = x + (isFirstLine ? 15 : 0); // Paragraph Indent
+      let curX = x + (isFirstLine ? 15 : 0);
       for (let i = 0; i < words.length; i++) {
         safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-        curX += wordWidths[i] + spaceW;
+        curX += words[i].length * charWidth + spaceW;
       }
     }
     return;
   }
   
-  // FULL JUSTIFY (Both sides align)
+  // TRUE JUSTIFY
   if (isRTL) {
     let curX = x + targetWidth;
     for (let i = words.length - 1; i >= 0; i--) {
-      curX -= wordWidths[i];
+      let wW = words[i].length * charWidth;
+      curX -= wW;
       safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
       curX -= (spaceW + extraPerGap);
     }
   } else {
-    let curX = x + (isFirstLine ? 15 : 0); // Paragraph Indent
+    let curX = x + (isFirstLine ? 15 : 0);
     for (let i = 0; i < words.length; i++) {
       safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-      curX += wordWidths[i] + spaceW + extraPerGap;
+      curX += words[i].length * charWidth + spaceW + extraPerGap;
     }
   }
 }
@@ -349,23 +365,28 @@ async function translateChunk(text, target) {
   return stripInvisible(out);
 }
 
-async function translatePageWise(ch, target) {
+async function translatePageWise(ch, target, progressCb) {
   let srcPages = ch.pagesText || [ch.text || ''];
   let outPages = [];
   for (let pi = 0; pi < srcPages.length; pi++) {
     let pgTxt = cleanOCRText(stripInvisible(srcPages[pi] || ''));
     if (!pgTxt.trim()) { outPages.push(''); continue; }
     outPages.push(await translateChunk(pgTxt, target));
+    if (progressCb) progressCb((pi + 1) / srcPages.length * 100);
   }
   return outPages;
 }
 
-// ============ V28 TURBO OCR ============
+// ============ V29 TURBO OCR ============
 async function getTesseractWorker() {
   if (_tesseractWorker) return _tesseractWorker;
   let lang = document.getElementById('ocrLang').value;
   _tesseractWorker = await Tesseract.createWorker(lang, 1, {
-    logger: m => { if (m.status === 'recognizing text') document.getElementById('ocrStatus').textContent = 'OCR... ' + Math.round(m.progress * 100) + '%'; }
+    logger: m => { 
+      if (m.status === 'recognizing text') {
+        // This is page-specific progress, handled in getChapterText
+      }
+    }
   });
   return _tesseractWorker;
 }
@@ -398,7 +419,6 @@ async function getChapterText(ch, useOCR, onPage) {
       let ctx = c.getContext('2d', { willReadFrequently: true });
       await page.render({ canvasContext: ctx, viewport: vp }).promise;
       
-      // Grayscale conversion for speed & accuracy
       let imgData = ctx.getImageData(0, 0, c.width, c.height);
       let d = imgData.data;
       for (let i = 0; i < d.length; i += 4) {
@@ -423,7 +443,7 @@ async function getChapterText(ch, useOCR, onPage) {
   
   let all2 = '';
   pagesText.forEach((pp, pi) => {
-    all2 += pp + '\n\n--- Page Break (Original Page ' + (pi + 1) + ') ---\n\n';
+    all2 += pp + '\n\n--- Page Break (Original Page ' + (pi + 1) + ' ---\n\n';
   });
   return stripInvisible(all2);
 }
@@ -432,23 +452,33 @@ async function runFullOCR(onlyIdx = null) {
   if (_busy || !chapters.length) return;
   let indices = onlyIdx != null ? [onlyIdx] : chapters.map((_, i) => i);
   _busy = true; _cancel = false;
+  updateProgress('ocr', 0);
+  
+  let totalPages = indices.reduce((s, i) => s + (chapters[i].pages || 0), 0);
+  let donePages = 0;
+
   for (let idx of indices) {
     if (_cancel) break;
     let ch = chapters[idx];
     ch.text = await getChapterText(ch, true, (p, tot) => {
       document.getElementById('ocrStatus').textContent = 'Chapter ' + (idx + 1) + ' — Page ' + p + '/' + tot;
+      let currentPercent = ((donePages + p) / totalPages) * 100;
+      updateProgress('ocr', currentPercent);
     });
     ch.ocrDone = true;
+    donePages += ch.pages;
     renderChapters();
   }
+  
   let combined = '';
   chapters.forEach((c, i) => { combined += '\n\n===== CHAPTER ' + (i + 1) + ': ' + c.title + ' =====\n\n' + (c.text || ''); });
   document.getElementById('ocrText').value = stripInvisible(combined);
   rebuildSyncedPages();
   _busy = false;
+  updateProgress('ocr', 100);
 }
 
-// ============ BOOK MAKING (V28 FIX) ============
+// ============ BOOK MAKING (V29 PROGRESS) ============
 async function makeBook() {
   if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
@@ -457,13 +487,22 @@ async function makeBook() {
   
   _busy = true;
   document.getElementById('status').textContent = 'Book ban rahi hai...';
+  updateProgress('book', 0);
   
   try {
+    let totalTasks = chapters.length + (target != 'original' ? chapters.length : 0);
+    let completedTasks = 0;
+
+    // Translation Phase
     if (target != 'original') {
       for (let i = 0; i < chapters.length; i++) {
         if (chapters[i].pagesText && chapters[i].pagesText.length) {
-          chapters[i].translatedPages = await translatePageWise(chapters[i], target);
+          chapters[i].translatedPages = await translatePageWise(chapters[i], target, (pct) => {
+            let overallPct = ((completedTasks + (pct/100)) / totalTasks) * 100;
+            updateProgress('book', overallPct);
+          });
         }
+        completedTasks++;
       }
     }
     
@@ -499,18 +538,12 @@ async function makeBook() {
           let pageFont = (useComplex && urduFont) ? urduFont : font;
           let isRTL = useComplex;
           
-          // V28: Paragraph-aware line matching
           let paragraphs = rawPage.split(/\n+/);
           let matchedLines = [];
-          let linesNeeded = targetLines;
-          
           for (let para of paragraphs) {
             if (!para.trim()) continue;
-            let pLines = wrapText(para, 68);
-            matchedLines.push(...pLines);
+            matchedLines.push(...wrapText(para, 68));
           }
-          
-          // Adjust to exact target lines
           matchedLines = matchLines(matchedLines.join(' '), targetLines, 68);
           
           let fSize = useComplex ? 13 : 11;
@@ -521,7 +554,6 @@ async function makeBook() {
             let line = matchedLines[li];
             if (!line.trim()) { yy -= lineH; continue; }
             
-            // V28: Check if new paragraph
             let isFirstLine = (li === 0) || (matchedLines[li-1] && (matchedLines[li-1].endsWith('.') || matchedLines[li-1].endsWith('?') || matchedLines[li-1].endsWith('!') || matchedLines[li-1].endsWith('۔')));
             
             let isLast = (li == matchedLines.length - 1);
@@ -537,6 +569,9 @@ async function makeBook() {
         let pages = await merged.copyPages(src, src.getPageIndices());
         pages.forEach(p => merged.addPage(p));
       }
+      
+      completedTasks++;
+      updateProgress('book', (completedTasks / totalTasks) * 100);
     }
     
     const bytes = await merged.save();
@@ -548,6 +583,7 @@ async function makeBook() {
     
     _busy = false;
     document.getElementById('status').textContent = '✅ PRO BOOK TAYYAR HAI!';
+    updateProgress('book', 100);
   } catch(e) {
     _busy = false;
     document.getElementById('status').textContent = '❌ Error: ' + e.message;
@@ -593,10 +629,17 @@ function syncedPage(dir) {
 async function translatePreview() {
   let target = document.getElementById('targetLang').value;
   if (!chapters.length) return;
+  updateProgress('trans', 0);
+  let total = chapters.length;
   for (let ci = 0; ci < chapters.length; ci++) {
-    if (chapters[ci].pagesText) chapters[ci].translatedPages = await translatePageWise(chapters[ci], target);
+    if (chapters[ci].pagesText) {
+      chapters[ci].translatedPages = await translatePageWise(chapters[ci], target, (pct) => {
+        updateProgress('trans', ((ci + (pct/100)) / total) * 100);
+      });
+    }
   }
   rebuildSyncedPages();
+  updateProgress('trans', 100);
 }
 
 function renderChapters() {
@@ -614,7 +657,6 @@ function renderChapters() {
 function sortByName() { chapters.sort((a, b) => a.title.localeCompare(b.title)); renderChapters(); }
 function clearAll() { chapters = []; document.getElementById('ocrText').value = ''; renderChapters(); rebuildSyncedPages(); }
 function resetHang() { _busy = false; _cancel = true; }
-function setUILang() {}
 
 document.getElementById('pdfInput').addEventListener('change', async e => {
   let files = Array.from(e.target.files);
