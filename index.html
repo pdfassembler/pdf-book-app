@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V30 Ultimate Pro</title>
+<title>PDF Book Assembler PRO - V31 Word-Style</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -27,7 +27,6 @@ body{font-family:Inter,system-ui,sans-serif}
 #transSpin.spinning{opacity:1;animation:spin 0.8s linear infinite}
 .rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu','Amiri',Georgia,serif}
 .ltr-text{direction:ltr;text-align:left}
-/* Progress Bar */
 .progress-container { width: 100%; background-color: #e2e8f0; border-radius: 9999px; height: 10px; overflow: hidden; margin-top: 8px;}
 .progress-bar { height: 100%; background-color: #4f46e5; transition: width 0.3s ease; width: 0%; }
 .progress-text { font-size: 12px; color: #64748b; margin-top: 4px; text-align: right; font-weight: bold;}
@@ -38,7 +37,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold" data-i18n="appTitle">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V30 Ultimate Pro — Perfect Justify + Language Fix</p>
+<p class="text-xs opacity-90">V31 Word-Style Justify — MS Word jaisa auto adjustment</p>
 </div>
 <div class="flex items-center gap-2">
 <label class="text-xs" data-i18n="langLabel">Language:</label>
@@ -47,7 +46,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <option value="ur">اردو</option>
 <option value="en">English</option>
 </select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V30 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V31 ✓</span>
 </div>
 </div>
 </header>
@@ -55,12 +54,12 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V30 — Pro Justification & Language Fix:</b>
+<b>✅ PRO V31 — True Word-Style Justify:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>Perfect Text Align:</b> Text ab exactly columns ke andar rahega. Dono side se barabar (Justified) hoga, koi word bahir nahi jayega.</li>
-<li><b>Website Language Fixed:</b> Ab upar dropdown se language change karne par poora web text badal jayega.</li>
-<li><b>Accurate Progress Bars:</b> Live percentage ke sath progress bar properly chalega.</li>
-<li><b>Smart Justify:</b> Agar gap zyada bada ho (ek line mein kam words), toh text ko zabardasti stretch nahi kiya jayega, wo properly left/right align hoga.</li>
+<li><b>Exact Font Measurement:</b> Ab code har word ki asal width (points mein) measure karta hai. Text exactly page ke andar rahega.</li>
+<li><b>Auto Adjust Spaces:</b> MS Word ki tarah, words ke darmiyan spaces automatic adjust hongi taake dono side se line barabar ho.</li>
+<li><b>No Out of Bounds:</b> Koi word page se bahar ya margin ke andar nahi jayega.</li>
+<li><b>Paragraph Flow:</b> Naye paragraph par automatic indent aur sahi line-height maintain hogi.</li>
 </ul>
 </div>
 
@@ -146,7 +145,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ============ V30 MULTI-LANGUAGE UI ============
+// ============ MULTI-LANGUAGE UI ============
 const UI_LANGS = {
   roman: {
     appTitle: '📚 PDF Book Assembler PRO', langLabel: 'Language:', settings: 'Settings:', ocrLang: 'OCR Language:', ocrQuality: 'OCR Quality:',
@@ -170,7 +169,6 @@ function setUILang(lang) {
   document.querySelectorAll('[data-i18n]').forEach(e => {
     if (d[e.dataset.i18n]) e.textContent = d[e.dataset.i18n];
   });
-  // Update placeholder
   document.querySelectorAll('[data-i18n-placeholder]').forEach(e => {
     if (d[e.dataset.i18nPlaceholder]) e.setAttribute('placeholder', d[e.dataset.i18nPlaceholder]);
   });
@@ -195,7 +193,7 @@ function updateProgress(prefix, percent) {
   if (txt) txt.textContent = Math.round(percent) + '%';
 }
 
-// ============ V30 STRICT HEADER/FOOTER REMOVAL ============
+// ============ STRICT HEADER/FOOTER REMOVAL ============
 function stripHeaderFooter(pages) {
   if (!pages || pages.length < 2) return pages;
   return pages.map(p => {
@@ -210,7 +208,7 @@ function stripHeaderFooter(pages) {
   });
 }
 
-// ============ V30 SMART PARAGRAPH ============
+// ============ SMART PARAGRAPH ============
 function cleanOCRText(txt) {
   if (!txt) return '';
   let lines = String(txt).split('\n');
@@ -231,83 +229,108 @@ function cleanOCRText(txt) {
   return out.join('\n\n');
 }
 
-// ============ V30 PRO JUSTIFICATION ============
-// Font metrics approximation for exact calculation
-function getWordWidth(word, size, isRTL) {
-  // Average character width approx 0.52 for Helvetica, 0.6 for Urdu fonts
-  let base = isRTL ? size * 0.60 : size * 0.52;
-  return word.length * base;
+// ============ V31 WORD-STYLE WRAPPING ============
+// Exact width calculation by using actual PDF font object
+function measureWord(word, font, size) {
+  try { return font.widthOfTextAtSize(word, size); } 
+  catch(e) { return word.length * size * 0.5; }
 }
-function getSpaceWidth(size, isRTL) {
-  return isRTL ? size * 0.30 : size * 0.28;
+function measureSpace(font, size) {
+  try { return font.widthOfTextAtSize(' ', size); } 
+  catch(e) { return size * 0.3; }
 }
 
-function wrapTextPro(str, maxWidth, size, isRTL) {
+// Ye function pehle text ko lines me todta hai exactly MS Word ki tarah
+function wrapTextPro(str, maxWidth, fontObj, size) {
   let words = String(str || '').replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
-  let lines = [], cur = [], curW = 0;
-  let spaceW = getSpaceWidth(size, isRTL);
+  let lines = [], curWords = [];
+  let spaceW = measureSpace(fontObj, size);
+  let curWidth = 0;
   
   for (let w of words) {
-    let wW = getWordWidth(w, size, isRTL);
-    if (curW === 0) {
-      cur.push(w); curW = wW;
-    } else if (curW + spaceW + wW <= maxWidth) {
-      cur.push(w); curW += spaceW + wW;
+    let wW = measureWord(w, fontObj, size);
+    if (curWords.length === 0) {
+      curWords.push(w); 
+      curWidth = wW;
+    } else if (curWidth + spaceW + wW <= maxWidth) {
+      curWords.push(w); 
+      curWidth += spaceW + wW;
     } else {
-      lines.push(cur.join(' '));
-      cur = [w]; curW = wW;
+      lines.push(curWords.join(' '));
+      curWords = [w]; 
+      curWidth = wW;
     }
   }
-  if (cur.length) lines.push(cur.join(' '));
+  if (curWords.length) lines.push(curWords.join(' '));
   return lines;
 }
 
+// ============ V31 WORD-STYLE JUSTIFICATION ============
 function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
   let txt = stripInvisible(lineText).trim();
   if (!txt) return;
   
   let words = txt.split(/\s+/).filter(w => w.length > 0);
-  if (words.length <= 1) {
-    safeDraw(pg, txt, { x: x + (isFirstLine && !isRTL ? 15 : 0), y, size, font: fontObj });
-    return;
-  }
   
-  let spaceW = getSpaceWidth(size, isRTL);
-  let wordWidths = words.map(w => getWordWidth(w, size, isRTL));
-  let naturalW = wordWidths.reduce((a, b) => a + b, 0);
-  
-  let gaps = words.length - 1;
-  let totalNatural = naturalW + spaceW * gaps;
-  let extra = targetWidth - totalNatural;
-  let extraPerGap = gaps > 0 ? extra / gaps : 0;
-  
-  // If gap is too large (>12pt) or last line, do standard alignment
-  if (extra < 0 || extraPerGap > 12 || isLastLine) {
+  // If last line or single word, standard align
+  if (words.length <= 1 || isLastLine) {
     if (isRTL) {
-      // Right-align (with potential left overflow protection)
+      // Right align
       let curX = x + targetWidth;
       for (let i = words.length - 1; i >= 0; i--) {
-        curX -= wordWidths[i];
-        if (curX < x) curX = x; // Safety clamp
+        let wW = measureWord(words[i], fontObj, size);
+        curX -= wW;
+        if (curX < x) curX = x; // clamp
         safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-        curX -= spaceW;
+        curX -= measureSpace(fontObj, size);
       }
     } else {
-      // Left-align with indent
+      // Left align with indent
       let curX = x + (isFirstLine ? 15 : 0);
       for (let i = 0; i < words.length; i++) {
         safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-        curX += wordWidths[i] + spaceW;
+        curX += measureWord(words[i], fontObj, size) + measureSpace(fontObj, size);
       }
     }
     return;
   }
   
-  // FULL JUSTIFY
+  // Calculate natural width & extra space
+  let naturalW = 0;
+  for (let w of words) naturalW += measureWord(w, fontObj, size);
+  let spaceW = measureSpace(fontObj, size);
+  let gaps = words.length - 1;
+  let totalNatural = naturalW + (spaceW * gaps);
+  let extra = targetWidth - totalNatural;
+  let extraPerGap = extra / gaps;
+  
+  // STRETCH LIMIT: Agar gap bohat zyada bada ho jaye (jaise 15pt se zyada) toh justify na karo, sirf align karo
+  // Is se text kharab nahi lagta aur words line se bahar nahi jate
+  if (extraPerGap > 15 || extra < 0) {
+    if (isRTL) {
+      let curX = x + targetWidth;
+      for (let i = words.length - 1; i >= 0; i--) {
+        let wW = measureWord(words[i], fontObj, size);
+        curX -= wW;
+        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
+        curX -= spaceW;
+      }
+    } else {
+      let curX = x + (isFirstLine ? 15 : 0);
+      for (let i = 0; i < words.length; i++) {
+        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
+        curX += measureWord(words[i], fontObj, size) + spaceW;
+      }
+    }
+    return;
+  }
+  
+  // PRO JUSTIFY (Exact MS Word Style)
   if (isRTL) {
     let curX = x + targetWidth;
     for (let i = words.length - 1; i >= 0; i--) {
-      curX -= wordWidths[i];
+      let wW = measureWord(words[i], fontObj, size);
+      curX -= wW;
       safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
       curX -= (spaceW + extraPerGap);
     }
@@ -315,7 +338,7 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
     let curX = x + (isFirstLine ? 15 : 0);
     for (let i = 0; i < words.length; i++) {
       safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-      curX += wordWidths[i] + spaceW + extraPerGap;
+      curX += measureWord(words[i], fontObj, size) + spaceW + extraPerGap;
     }
   }
 }
@@ -392,7 +415,7 @@ async function translatePageWise(ch, target, progressCb) {
   return outPages;
 }
 
-// ============ V30 TURBO OCR ============
+// ============ TURBO OCR ============
 async function getTesseractWorker() {
   if (_tesseractWorker) return _tesseractWorker;
   let lang = document.getElementById('ocrLang').value;
@@ -450,7 +473,13 @@ async function getChapterText(ch, useOCR, onPage) {
   
   pagesText = stripHeaderFooter(pagesText);
   ch.pagesText = pagesText;
-  ch.origLineCounts = pagesText.map(p => wrapTextPro(p, 495, 13, true).length || 1);
+  
+  // V31: Calculate lines with proper width (using 13pt for Urdu, 11 for English)
+  ch.origLineCounts = pagesText.map(p => {
+    let isRtl = needsComplexFont(p);
+    return isRtl ? wrapTextPro(p, 495, {widthOfTextAtSize: (t,s) => t.length * s * 0.6}, 13).length : 
+                   wrapTextPro(p, 495, {widthOfTextAtSize: (t,s) => t.length * s * 0.5}, 11).length;
+  });
   
   let all2 = '';
   pagesText.forEach((pp, pi) => {
@@ -489,7 +518,7 @@ async function runFullOCR(onlyIdx = null) {
   updateProgress('ocr', 100);
 }
 
-// ============ BOOK MAKING (V30 PRO JUSTIFY) ============
+// ============ BOOK MAKING (V31 WORD-STYLE) ============
 async function makeBook() {
   if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
@@ -501,23 +530,22 @@ async function makeBook() {
   updateProgress('book', 0);
   
   try {
-    let totalTasks = chapters.length + (target != 'original' ? chapters.length : 0);
+    let totalTasks = chapters.length * 2;
     let completedTasks = 0;
 
-    // Phase 1: Translation
+    // Translation Phase
     if (target != 'original') {
       for (let i = 0; i < chapters.length; i++) {
         if (chapters[i].pagesText && chapters[i].pagesText.length) {
           chapters[i].translatedPages = await translatePageWise(chapters[i], target, (pct) => {
-            let overallPct = ((completedTasks + (pct/100)) / totalTasks) * 100;
-            updateProgress('book', overallPct);
+            updateProgress('book', ((completedTasks + (pct/100)) / totalTasks) * 100);
           });
         }
         completedTasks++;
       }
     }
     
-    // Phase 2: PDF Generation
+    // PDF Generation Phase
     const merged = await PDFLib.PDFDocument.create();
     const font = await merged.embedFont(PDFLib.StandardFonts.Helvetica);
     const urduFont = await loadUrduFont(merged);
@@ -552,34 +580,31 @@ async function makeBook() {
           let lineH = useComplex ? 26 : 21;
           let targetWidth = 495; // 595 - 50(left) - 50(right) = 495
           
-          // Paragraphs ko properly wrap karo
+          // Paragraphs ko properly wrap karo (exact word wrapping)
           let paragraphs = rawPage.split(/\n+/);
-          let matchedLines = [];
+          let allLines = [];
           
           for (let para of paragraphs) {
             if (!para.trim()) continue;
-            // Wrap using font metrics approximation
-            let pLines = wrapTextPro(para, targetWidth, fSize, isRTL);
-            if (pLines.length > 0) matchedLines.push(...pLines);
+            // V31: Use actual font object for measurement
+            let pLines = wrapTextPro(para, targetWidth, pageFont, fSize);
+            if (pLines.length > 0) allLines.push(...pLines);
           }
           
-          for (let li = 0; li < matchedLines.length; li++) {
-            let line = matchedLines[li];
+          // Draw all lines with Word-style justify
+          for (let li = 0; li < allLines.length; li++) {
+            let line = allLines[li];
             if (!line.trim()) { yy -= lineH; continue; }
             
-            // Determine if it's a first line of paragraph
+            // First line of paragraph detection
             let isFirstLine = false;
-            if (li === 0) {
-              isFirstLine = true;
-            } else {
-              // Check previous line ends with period etc.
-              let prev = matchedLines[li-1].trim();
-              if (prev.endsWith('.') || prev.endsWith('?') || prev.endsWith('!') || prev.endsWith('۔')) {
-                isFirstLine = true;
-              }
+            if (li === 0) isFirstLine = true;
+            else {
+              let prev = allLines[li-1].trim();
+              if (prev.endsWith('.') || prev.endsWith('?') || prev.endsWith('!') || prev.endsWith('۔')) isFirstLine = true;
             }
             
-            let isLast = (li == matchedLines.length - 1);
+            let isLast = (li == allLines.length - 1);
             drawJustifiedLine(curPg, line, 50, yy, fSize, pageFont, isLast, isFirstLine, targetWidth, isRTL);
             yy -= lineH;
           }
