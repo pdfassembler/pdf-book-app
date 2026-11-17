@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V31 Word-Style</title>
+<title>PDF Book Assembler PRO - V32 Professional</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -37,7 +37,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold" data-i18n="appTitle">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V31 Word-Style Justify — MS Word jaisa auto adjustment</p>
+<p class="text-xs opacity-90">V32 Pro — Dynamic Layout & Chapter Covers</p>
 </div>
 <div class="flex items-center gap-2">
 <label class="text-xs" data-i18n="langLabel">Language:</label>
@@ -46,7 +46,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <option value="ur">اردو</option>
 <option value="en">English</option>
 </select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V31 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V32 ✓</span>
 </div>
 </div>
 </header>
@@ -54,12 +54,12 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V31 — True Word-Style Justify:</b>
+<b>✅ PRO V32 — New Features:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>Exact Font Measurement:</b> Ab code har word ki asal width (points mein) measure karta hai. Text exactly page ke andar rahega.</li>
-<li><b>Auto Adjust Spaces:</b> MS Word ki tarah, words ke darmiyan spaces automatic adjust hongi taake dono side se line barabar ho.</li>
-<li><b>No Out of Bounds:</b> Koi word page se bahar ya margin ke andar nahi jayega.</li>
-<li><b>Paragraph Flow:</b> Naye paragraph par automatic indent aur sahi line-height maintain hogi.</li>
+<li><b>Dynamic Font Size:</b> Text ka size bara (13.5pt / 15.5pt) kar diya gaya hai.</li>
+<li><b>Dynamic Line Gap:</b> Agar page par text kam ho toh lines ke darmiyan gap barh jayega.</li>
+<li><b>Chapter Covers:</b> Har Chapter ke samne Cover image lagane ka option.</li>
+<li><b>Centered Titles:</b> Chapter ka title page ke bilkul center mein hoga.</li>
 </ul>
 </div>
 
@@ -229,8 +229,7 @@ function cleanOCRText(txt) {
   return out.join('\n\n');
 }
 
-// ============ V31 WORD-STYLE WRAPPING ============
-// Exact width calculation by using actual PDF font object
+// ============ V32 WORD-STYLE WRAPPING ============
 function measureWord(word, font, size) {
   try { return font.widthOfTextAtSize(word, size); } 
   catch(e) { return word.length * size * 0.5; }
@@ -240,7 +239,6 @@ function measureSpace(font, size) {
   catch(e) { return size * 0.3; }
 }
 
-// Ye function pehle text ko lines me todta hai exactly MS Word ki tarah
 function wrapTextPro(str, maxWidth, fontObj, size) {
   let words = String(str || '').replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
   let lines = [], curWords = [];
@@ -250,42 +248,36 @@ function wrapTextPro(str, maxWidth, fontObj, size) {
   for (let w of words) {
     let wW = measureWord(w, fontObj, size);
     if (curWords.length === 0) {
-      curWords.push(w); 
-      curWidth = wW;
+      curWords.push(w); curWidth = wW;
     } else if (curWidth + spaceW + wW <= maxWidth) {
-      curWords.push(w); 
-      curWidth += spaceW + wW;
+      curWords.push(w); curWidth += spaceW + wW;
     } else {
       lines.push(curWords.join(' '));
-      curWords = [w]; 
-      curWidth = wW;
+      curWords = [w]; curWidth = wW;
     }
   }
   if (curWords.length) lines.push(curWords.join(' '));
   return lines;
 }
 
-// ============ V31 WORD-STYLE JUSTIFICATION ============
+// ============ V32 PERFECT JUSTIFICATION ============
 function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
   let txt = stripInvisible(lineText).trim();
   if (!txt) return;
   
   let words = txt.split(/\s+/).filter(w => w.length > 0);
   
-  // If last line or single word, standard align
   if (words.length <= 1 || isLastLine) {
     if (isRTL) {
-      // Right align
       let curX = x + targetWidth;
       for (let i = words.length - 1; i >= 0; i--) {
         let wW = measureWord(words[i], fontObj, size);
         curX -= wW;
-        if (curX < x) curX = x; // clamp
+        if (curX < x) curX = x;
         safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
         curX -= measureSpace(fontObj, size);
       }
     } else {
-      // Left align with indent
       let curX = x + (isFirstLine ? 15 : 0);
       for (let i = 0; i < words.length; i++) {
         safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
@@ -295,7 +287,6 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
     return;
   }
   
-  // Calculate natural width & extra space
   let naturalW = 0;
   for (let w of words) naturalW += measureWord(w, fontObj, size);
   let spaceW = measureSpace(fontObj, size);
@@ -304,8 +295,6 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
   let extra = targetWidth - totalNatural;
   let extraPerGap = extra / gaps;
   
-  // STRETCH LIMIT: Agar gap bohat zyada bada ho jaye (jaise 15pt se zyada) toh justify na karo, sirf align karo
-  // Is se text kharab nahi lagta aur words line se bahar nahi jate
   if (extraPerGap > 15 || extra < 0) {
     if (isRTL) {
       let curX = x + targetWidth;
@@ -325,7 +314,6 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
     return;
   }
   
-  // PRO JUSTIFY (Exact MS Word Style)
   if (isRTL) {
     let curX = x + targetWidth;
     for (let i = words.length - 1; i >= 0; i--) {
@@ -474,11 +462,11 @@ async function getChapterText(ch, useOCR, onPage) {
   pagesText = stripHeaderFooter(pagesText);
   ch.pagesText = pagesText;
   
-  // V31: Calculate lines with proper width (using 13pt for Urdu, 11 for English)
   ch.origLineCounts = pagesText.map(p => {
     let isRtl = needsComplexFont(p);
-    return isRtl ? wrapTextPro(p, 495, {widthOfTextAtSize: (t,s) => t.length * s * 0.6}, 13).length : 
-                   wrapTextPro(p, 495, {widthOfTextAtSize: (t,s) => t.length * s * 0.5}, 11).length;
+    let fSize = isRtl ? 15.5 : 13.5;
+    return isRtl ? wrapTextPro(p, 495, {widthOfTextAtSize: (t,s) => t.length * s * 0.6}, fSize).length : 
+                   wrapTextPro(p, 495, {widthOfTextAtSize: (t,s) => t.length * s * 0.5}, fSize).length;
   });
   
   let all2 = '';
@@ -518,7 +506,7 @@ async function runFullOCR(onlyIdx = null) {
   updateProgress('ocr', 100);
 }
 
-// ============ BOOK MAKING (V31 WORD-STYLE) ============
+// ============ BOOK MAKING (V32 DYNAMIC GAP + FONT) ============
 async function makeBook() {
   if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
@@ -559,9 +547,37 @@ async function makeBook() {
     for (let i = 0; i < chapters.length; i++) {
       let ch = chapters[i];
       
+      // V32: CHAPTER COVER
+      if (ch.coverData) {
+        let cimg;
+        try {
+          let res = await fetch(ch.coverData);
+          let buf = await res.arrayBuffer();
+          if (ch.coverType && ch.coverType.indexOf('png') >= 0) cimg = await merged.embedPng(buf);
+          else cimg = await merged.embedJpg(buf);
+        } catch(e) {}
+        
+        if (cimg) {
+          let cpg = merged.addPage([595, 842]);
+          let iw = cimg.width, ih = cimg.height;
+          let scale = Math.min(595/iw, 842/ih);
+          let dw = iw * scale, dh = ih * scale;
+          let dx = (595 - dw)/2, dy = (842 - dh)/2;
+          cpg.drawImage(cimg, { x: dx, y: dy, width: dw, height: dh });
+        }
+      }
+      
+      // V32: CHAPTER TITLE (Centered)
       let div = merged.addPage([595, 842]);
-      safeDraw(div, 'CHAPTER ' + (i + 1), { x: 50, y: 520, size: 12, font: bold });
-      safeDraw(div, ch.title.slice(0, 40), { x: 50, y: 470, size: 20, font: bold });
+      let titleStr = 'CHAPTER ' + (i + 1);
+      let subtitleStr = ch.title.slice(0, 40);
+      
+      // Center alignment
+      let titleW = measureWord(titleStr, bold, 24);
+      let subW = measureWord(subtitleStr, bold, 18);
+      
+      safeDraw(div, titleStr, { x: (595 - titleW)/2, y: 500, size: 24, font: bold });
+      safeDraw(div, subtitleStr, { x: (595 - subW)/2, y: 460, size: 18, font: bold });
       
       if (mode !== 'original') {
         let pagesToWrite = ch.translatedPages || [ch.translated || ch.text || ''];
@@ -571,32 +587,41 @@ async function makeBook() {
           if (!rawPage.trim()) continue;
           
           let curPg = merged.addPage([595, 842]);
-          let yy = 750;
           
+          // V32: DYNAMIC FONT SIZE & LINE GAP
           let useComplex = needsComplexFont(rawPage);
           let pageFont = (useComplex && urduFont) ? urduFont : font;
           let isRTL = useComplex;
-          let fSize = useComplex ? 13 : 11;
-          let lineH = useComplex ? 26 : 21;
+          
+          // Bara font size
+          let fSize = useComplex ? 15.5 : 13.5; 
+          let lineH = useComplex ? 32 : 26; // Base line height
           let targetWidth = 495; // 595 - 50(left) - 50(right) = 495
           
-          // Paragraphs ko properly wrap karo (exact word wrapping)
           let paragraphs = rawPage.split(/\n+/);
           let allLines = [];
           
           for (let para of paragraphs) {
             if (!para.trim()) continue;
-            // V31: Use actual font object for measurement
             let pLines = wrapTextPro(para, targetWidth, pageFont, fSize);
             if (pLines.length > 0) allLines.push(...pLines);
           }
           
-          // Draw all lines with Word-style justify
+          // V32: SMART LINE GAP ADJUSTMENT
+          let availableHeight = 750 - 50; // 750 top, 50 bottom
+          let totalTextHeight = allLines.length * lineH;
+          
+          // Agar text kam hai aur page mein jagah bachi hai, toh line gap barha do
+          if (totalTextHeight < availableHeight && allLines.length > 1) {
+             lineH = availableHeight / allLines.length;
+          }
+          
+          let yy = 750;
+          
           for (let li = 0; li < allLines.length; li++) {
             let line = allLines[li];
             if (!line.trim()) { yy -= lineH; continue; }
             
-            // First line of paragraph detection
             let isFirstLine = false;
             if (li === 0) isFirstLine = true;
             else {
@@ -605,6 +630,7 @@ async function makeBook() {
             }
             
             let isLast = (li == allLines.length - 1);
+            // Adjust y position for vertical centering if needed
             drawJustifiedLine(curPg, line, 50, yy, fSize, pageFont, isLast, isFirstLine, targetWidth, isRTL);
             yy -= lineH;
           }
@@ -697,9 +723,33 @@ function renderChapters() {
   chapters.forEach((ch, i) => {
     let div = document.createElement('div');
     div.className = 'chapterRow ' + (ch.ocrDone ? 'done' : '');
-    div.innerHTML = '<div class="flex items-center gap-2"><div class="chapNum">' + (i+1) + '</div><div class="flex-1"><b>' + ch.title + '</b><p class="text-xs text-slate-500">' + ch.pages + ' pages</p></div><button onclick="runFullOCR(' + i + ')" class="bg-amber-500 text-white px-3 py-1 rounded text-xs font-bold">OCR</button></div>';
+    div.innerHTML = `
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="chapNum">${i+1}</div>
+        <div class="flex-1 min-w-[150px]">
+          <b>${ch.title}</b>
+          <p class="text-xs text-slate-500">${ch.pages} pages</p>
+        </div>
+        <label class="bg-purple-100 px-2 py-1 rounded text-xs font-bold cursor-pointer">
+          🖼️ Cover
+          <input type="file" accept="image/*" class="hidden" onchange="onChapterCoverChange(${i}, event)">
+        </label>
+        <button onclick="runFullOCR(${i})" class="bg-amber-500 text-white px-3 py-1 rounded text-xs font-bold">OCR</button>
+      </div>`;
     list.appendChild(div);
   });
+}
+
+async function onChapterCoverChange(idx, e) {
+  let f = e.target.files[0];
+  if (!f) return;
+  let reader = new FileReader();
+  reader.onload = () => {
+    chapters[idx].coverData = reader.result;
+    chapters[idx].coverType = f.type;
+    alert('Cover lag gaya Chapter ' + (idx+1) + ' ke liye!');
+  };
+  reader.readAsDataURL(f);
 }
 
 function sortByName() { chapters.sort((a, b) => a.title.localeCompare(b.title)); renderChapters(); }
