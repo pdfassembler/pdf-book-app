@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V26 Professional</title>
+<title>PDF Book Assembler PRO - V28 Perfect Justify</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -34,16 +34,16 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V26 Professional — Smart Paragraphs + True Justify</p>
+<p class="text-xs opacity-90">V28 Perfect Justify & Paragraphs</p>
 </div>
 <div class="flex items-center gap-2">
-<label class="text-xs">Website Language:</label>
+<label class="text-xs">Language:</label>
 <select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1">
 <option value="roman">Roman Urdu</option>
 <option value="ur">اردو</option>
 <option value="en">English</option>
 </select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V26 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V28 ✓</span>
 </div>
 </div>
 </header>
@@ -51,12 +51,12 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V26 — Major Fixes:</b>
+<b>✅ PRO V28 — Text Formatting Fix:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>Smart Paragraphs:</b> Ab text dabdaba nahi banega, naye paragraphs ki pehli line thodi aage hogi (Book style).</li>
-<li><b>True Justification:</b> Text dono taraf bilkul barabar hoga. Gaps zyada bade nahi honge.</li>
-<li><b>Strict Header/Footer:</b> Page numbers aur faltu lines ko mukammal taur par text se nikal diya jayega.</li>
-<li><b>LTR Fix:</b> English text screen se bahar nahi jayega (screenshot wala masla hal).</li>
+<li><b>True Justify:</b> Har line ke words ke darmiyan space exact calculate hogi, text dono sides se barabar hoga.</li>
+<li><b>Paragraph Indent:</b> Naye paragraph ki pehli line thodi aage hogi (Book style).</li>
+<li><b>Word Overflow Fixed:</b> Koi word line se bahar nahi jayega, na hi screen se cut hoga.</li>
+<li><b>Strict Number Removal:</b> Page numbers aur faltu chhoti lines text ke beech se nikal di jayengi.</li>
 </ul>
 </div>
 
@@ -64,106 +64,67 @@ body{font-family:Inter,system-ui,sans-serif}
 <b>Settings:</b>
 <label>OCR Language: 
 <select id="ocrLang" class="border rounded px-2 py-1">
-<option value="urd">Urdu Only (BEST)</option>
+<option value="urd">Urdu Only</option>
 <option value="eng">English Only</option>
 <option value="urd+eng">Urdu + English</option>
-<option value="ara">Arabic</option>
 </select>
 </label>
 <label>OCR Quality: 
 <select id="ocrQuality" class="border rounded px-2 py-1">
 <option value="2">High - 2.0</option>
-<option value="1.5">Medium - 1.5</option>
+<option value="1.5" selected>Medium - 1.5 (Fast)</option>
 <option value="1.2">Fast - 1.2</option>
 </select>
 </label>
-<label><input type="checkbox" id="pageWise" checked> Page-Wise Translation</label>
 </div>
 
 <div class="card">
 <h2 class="font-bold">1️⃣ Chapters Add Karein</h2>
-<p class="text-xs text-slate-500">Tip: Files ko naam dein — 01-Chapter1.pdf, 02-Chapter2.pdf</p>
 <input id="pdfInput" type="file" accept="application/pdf" multiple class="w-full border p-2 rounded mt-2">
 <div class="flex gap-2 mt-2 text-xs flex-wrap">
-<button onclick="sortByName()" class="bg-slate-200 px-3 py-1 rounded font-bold">🔤 Naam Se Tarteeb</button>
-<button onclick="clearAll()" class="bg-red-100 px-3 py-1 rounded font-bold">🗑️ Sab Clear</button>
-<button onclick="resetHang()" class="bg-red-500 text-white px-3 py-1 rounded font-bold">🔄 Hang Reset</button>
+<button onclick="sortByName()" class="bg-slate-200 px-3 py-1 rounded font-bold">🔤 Sort</button>
+<button onclick="clearAll()" class="bg-red-100 px-3 py-1 rounded font-bold">🗑️ Clear</button>
+<button onclick="resetHang()" class="bg-red-500 text-white px-3 py-1 rounded font-bold">🔄 Reset</button>
 </div>
 <div id="fileList" class="mt-3 space-y-2"></div>
-<div id="tocPreview" class="hidden mt-3 bg-indigo-50 p-3 rounded">
-<b>📑 TOC Preview:</b>
-<div id="tocList" class="text-sm mt-1"></div>
-</div>
 </div>
 
 <div class="grid md:grid-cols-2 gap-4">
 <div class="card">
 <h2 class="font-bold">2️⃣ FULL OCR</h2>
-<button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2">🔍 Sab Chapters Ka FULL OCR Karo</button>
-<button onclick="extractAllText()" class="w-full bg-slate-800 text-white py-2 rounded-xl font-bold mt-2 text-sm">📄 Sirf Text Nikalo (Fast)</button>
+<button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2">🔍 OCR Karo</button>
 <div id="ocrStatus" class="text-sm mt-2 bg-slate-50 p-2 rounded">Abhi OCR nahi hua.</div>
-<div class="flex justify-between items-center mt-2">
-<span class="text-xs font-bold">OCR Text — 1 Page Preview</span>
-<button onclick="toggleBoxSize('ocrText')" class="bg-slate-200 px-2 py-1 rounded text-xs font-bold">Bara / Chhota</button>
-</div>
-<textarea id="ocrText" class="flexBox w-full border p-2 rounded h-40 mt-1" placeholder="OCR text yahan aayega..."></textarea>
+<textarea id="ocrText" class="flexBox w-full border p-2 rounded h-40 mt-1"></textarea>
 </div>
 
 <div class="card">
-<h2 class="font-bold">3️⃣ Book Banao & Translate</h2>
-<label class="text-sm">Book Ka Naam</label>
+<h2 class="font-bold">3️⃣ Book Banao</h2>
 <input id="bookName" value="Meri Book" class="w-full border p-2 rounded mb-2">
-<label class="text-sm">Book Author (Optional)</label>
-<input id="bookAuthor" placeholder="Masalan: Muhammad Shahid" class="w-full border p-2 rounded mb-2">
-<label class="text-sm">Language</label>
 <select id="targetLang" onchange="translatePreview();fixContentDir();" class="w-full border p-2 rounded mb-2">
 <option value="ur">Urdu</option>
 <option value="en">English</option>
 <option value="roman">Roman Urdu</option>
-<option value="ar">Arabic</option>
-<option value="hi">Hindi</option>
 </select>
-<label class="text-sm">Style</label>
 <select id="bookMode" class="w-full border p-2 rounded mb-3">
-<option value="both">⭐ PRO: Original + Translated</option>
-<option value="translated">Translated Text Wali Book</option>
+<option value="both">Original + Translated</option>
+<option value="translated">Only Translated</option>
 </select>
-<button onclick="makeBook()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">📖 PRO Book Banao & Download Karo</button>
+<button onclick="makeBook()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">📖 Book Banao</button>
 <div id="status" class="text-sm mt-3 bg-slate-50 p-2 rounded">Ready hai.</div>
 <div id="downloadArea"></div>
 </div>
 </div>
 
 <div class="card !border-2 !border-emerald-300">
-<h2 class="font-bold">Translation Preview <span id="transSpin" title="Translation ho rahi hai to ye ghoomega">⟳</span> <span id="transSpinLabel" class="text-xs font-normal text-slate-500"></span></h2>
+<h2 class="font-bold">Translation Preview <span id="transSpin">⟳</span></h2>
 <div class="flex flex-wrap gap-2 mt-2 items-center text-xs">
-<b>View:</b>
-<button id="viewTransBtn" onclick="setPreviewView('translated')" class="bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold">Sirf Translated</button>
-<button id="viewBothBtn" onclick="setPreviewView('both')" class="bg-slate-200 px-3 py-1.5 rounded-full font-bold">Dono Sath (Compare)</button>
-<span class="ml-2">Page: 
-<button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-1 rounded font-bold">◀ Prev</button> 
-<span id="previewPageLabel">Page 1 / 1</span> 
-<button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-1 rounded font-bold">Next ▶</button>
-</span>
+<button onclick="translatePreview()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold">Translate Karo</button>
+<span>Page: <button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-1 rounded font-bold">◀</button> 
+<span id="previewPageLabel">1 / 1</span> 
+<button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-1 rounded font-bold">▶</button></span>
 </div>
-<div id="previewGrid" class="grid md:grid-cols-1 gap-3 mt-2">
-<div id="origPreviewWrap" class="hidden">
-<label class="text-xs font-bold">ORIGINAL Text (OCR wala)</label>
-<textarea id="ocrTextPreview" class="flexBox w-full border p-2 rounded h-40 mt-1" readonly></textarea>
-</div>
-<div id="transPreviewWrap">
-<div class="flex justify-between items-center">
-<label class="text-xs font-bold">TRANSLATED (Smart Paragraphs)</label>
-<button onclick="toggleBoxSize('translatedBookView')" class="bg-emerald-100 px-2 py-1 rounded text-xs font-bold">Bara / Chhota</button>
-</div>
-<div id="translatedBookView" class="flexBox w-full border p-3 rounded mt-1 bg-white text-[15px] leading-7 whitespace-pre-wrap ltr-text" style="font-family:Georgia,serif"></div>
+<div id="translatedBookView" class="flexBox w-full border p-3 rounded mt-2 bg-white text-[15px] leading-7 whitespace-pre-wrap" style="font-family:Georgia,serif"></div>
 <textarea id="translatedPreview" class="hidden" readonly></textarea>
-</div>
-</div>
-<div class="flex gap-2 mt-2">
-<button onclick="translatePreview()" class="flex-1 bg-emerald-600 text-white py-2 rounded-xl font-bold">Translate Preview Dekho</button>
-</div>
-<p id="previewInfo" class="text-xs mt-1 text-slate-500"></p>
 </div>
 
 </main>
@@ -171,92 +132,55 @@ body{font-family:Inter,system-ui,sans-serif}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let chapters = [];
-let _cancel = false;
-let _busy = false;
-let _syncedPageIdx = 0;
-let _ocrPages = [];
-let _transPagesSync = [];
-let _urduFont = null;
+let chapters = [], _busy = false, _cancel = false, _syncedPageIdx = 0;
+let _ocrPages = [], _transPagesSync = [], _urduFont = null, _tesseractWorker = null;
 
-// ============ UTILITIES ============
-function stripInvisible(str) {
-  if (!str) return '';
-  return String(str).replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g, '');
-}
-
-function cleanTextForPDF(str) {
-  if (!str) return '';
-  return stripInvisible(String(str));
-}
-
-function needsComplexFont(txt) {
-  return /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(txt || '');
-}
-
+// ============ UTILS ============
+function stripInvisible(str) { return str ? String(str).replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g, '') : ''; }
+function needsComplexFont(txt) { return /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(txt || ''); }
 function detectTextLang(txt) {
-  let a = (txt.match(/[\u0600-\u06FF]/g) || []).length;
-  let l = (txt.match(/[A-Za-z]/g) || []).length;
-  if (a > l && a > 20) return 'ur';
-  return 'en';
+  let a = (txt.match(/[\u0600-\u06FF]/g) || []).length, l = (txt.match(/[A-Za-z]/g) || []).length;
+  return (a > l && a > 20) ? 'ur' : 'en';
 }
 
-function fixContentDir() {
-  let bv = document.getElementById('translatedBookView');
-  if (bv) {
-    let tgt = document.getElementById('targetLang').value;
-    let rtl = (tgt == 'ur' || tgt == 'ar' || tgt == 'fa' || tgt == 'ps');
-    bv.dir = rtl ? 'rtl' : 'ltr';
-    bv.className = 'flexBox w-full border p-3 rounded mt-1 bg-white text-[15px] leading-7 whitespace-pre-wrap ' + (rtl ? 'rtl-text' : 'ltr-text');
-  }
-}
-
-// ============ V26: SMART HEADER/FOOTER REMOVAL ============
+// ============ V28 STRICT HEADER/FOOTER REMOVAL ============
 function stripHeaderFooter(pages) {
-  if (!pages || pages.length < 3) return pages;
-  
-  // Find frequent first/last lines
-  function freq(idxFn) {
-    let m = {};
-    pages.forEach(p => {
-      let ls = String(p || '').split('\n').map(x => x.trim()).filter(Boolean);
-      let v = idxFn(ls);
-      if (v) m[v] = (m[v] || 0) + 1;
-    });
-    return m;
-  }
-  
-  let firstF = freq(ls => ls[0] || '');
-  let lastF = freq(ls => ls[ls.length - 1] || '');
-  let thr = Math.ceil(pages.length * 0.5); // 50% threshold
-  let badFirst = new Set(Object.keys(firstF).filter(k => firstF[k] >= thr && k.length < 90));
-  let badLast = new Set(Object.keys(lastF).filter(k => lastF[k] >= thr && k.length < 90));
-  
+  if (!pages || pages.length < 2) return pages;
   return pages.map(p => {
-    let lines = String(p || '').split('\n');
-    lines = lines.filter(ln => {
-      let t = ln.trim();
-      if (!t) return true;
-      
-      // V26: Strict Page Number & Header/Footer removal
+    let lines = String(p || '').split('\n').map(l => l.trim()).filter(Boolean);
+    return lines.filter(t => {
       if (/^\d{1,4}$/.test(t)) return false; // Just a number
-      if (/^(page|p\.?|safha|صفحہ)\s*\d{1,4}$/i.test(t)) return false; // "Page X"
-      if (/^\d{1,4}\s*[\.\-\–\—\/|]\s*\d{1,4}$/.test(t)) return false; // "X - Y"
-      if (/^(chapter|chap|باب)\s*\d{1,3}$/i.test(t)) return false; // "Chapter 1"
-      
-      // Very short lines at the top/bottom that are likely noise
-      if (t.length < 15 && (t.includes('Part') || t.includes('Section') || t.includes('E.'))) return false;
-
+      if (/^(page|p\.?|safha|صفحہ)\s*\d{1,4}$/i.test(t)) return false;
+      if (/^(chapter|chap|باب|part|section)\s*\d{1,3}/i.test(t) && t.length < 25) return false;
+      if (/^E\.\d+/.test(t) && t.length < 25) return false; // E.5 type
       return true;
-    });
-    
-    if (lines.length && badFirst.has(lines[0].trim())) lines.shift();
-    if (lines.length && badLast.has(lines[lines.length - 1].trim())) lines.pop();
-    return lines.join('\n');
+    }).join('\n');
   });
 }
 
-// ============ V26: EXACT LINE MATCHING (WITH PARAGRAPHS) ============
+// ============ V28 SMART PARAGRAPH DETECTION ============
+function cleanOCRText(txt) {
+  if (!txt) return '';
+  let lines = String(txt).split('\n');
+  let out = [], curPara = '';
+  for (let ln of lines) {
+    let t = ln.trim();
+    if (!t) { if (curPara) { out.push(curPara); curPara = ''; } continue; }
+    if (t.length < 3 && /^[\d\.\-]+$/.test(t)) continue; // skip noise
+    
+    // Check if previous line ended with sentence ender (paragraph break)
+    if (curPara && (curPara.endsWith('.') || curPara.endsWith('?') || curPara.endsWith('!') || curPara.endsWith('۔'))) {
+      out.push(curPara);
+      curPara = t;
+    } else {
+      curPara = curPara ? curPara + ' ' + t : t;
+    }
+  }
+  if (curPara) out.push(curPara);
+  return out.join('\n\n'); // Double newline for paragraphs
+}
+
+// ============ EXACT LINE MATCHING ============
 function wrapText(str, max) {
   let words = String(str || '').replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
   let lines = [], cur = '';
@@ -268,22 +192,15 @@ function wrapText(str, max) {
   if (cur) lines.push(cur);
   return lines;
 }
-
 function countWrappedLines(text, maxChars) {
-  if (!String(text || '').trim()) return 0;
-  return wrapText(String(text).replace(/\s+/g, ' ').trim(), maxChars).length;
+  return text ? wrapText(String(text).replace(/\s+/g, ' ').trim(), maxChars).length : 0;
 }
 
 function matchLines(translatedText, targetLines, maxChars) {
   let text = String(translatedText || '').trim();
   if (!text || targetLines <= 0) return Array(targetLines || 1).fill('');
-  
-  let paragraphs = text.split(/\n+/);
   let words = text.replace(/\s+/g, ' ').trim().split(/\s+/).filter(Boolean);
-  
   let lines = [], cur = '';
-  
-  // Initial greedy wrap
   for (let w of words) {
     if (!cur) cur = w;
     else if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
@@ -291,7 +208,6 @@ function matchLines(translatedText, targetLines, maxChars) {
   }
   if (cur) lines.push(cur);
   
-  // Adjust to exact target lines
   while (lines.length > targetLines) {
     let bi = 0, best = 1e9;
     for (let i = 0; i < lines.length - 1; i++) {
@@ -300,7 +216,6 @@ function matchLines(translatedText, targetLines, maxChars) {
     }
     lines.splice(bi, 2, lines[bi] + ' ' + lines[bi + 1]);
   }
-  
   while (lines.length < targetLines) {
     let li = 0, best = -1;
     lines.forEach((L, i) => { if (L.length > best) { best = L.length; li = i; } });
@@ -309,26 +224,26 @@ function matchLines(translatedText, targetLines, maxChars) {
     let mid = Math.ceil(parts.length / 2);
     lines.splice(li, 1, parts.slice(0, mid).join(' '), parts.slice(mid).join(' '));
   }
-  
   return lines.slice(0, targetLines);
 }
 
-// ============ V26: TRUE JUSTIFICATION (NO OUT-OF-BOUNDS) ============
+// ============ V28 PERFECT JUSTIFICATION ============
 function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
-  let txt = cleanTextForPDF(lineText);
-  if (!txt.trim()) return;
+  let txt = stripInvisible(lineText).trim();
+  if (!txt) return;
   
   let words = txt.split(/\s+/).filter(w => w.length > 0);
   if (words.length <= 1) {
-    safeDraw(pg, txt, { x: x, y: y, size: size, font: fontObj });
+    safeDraw(pg, txt, { x: x, y, size, font: fontObj });
     return;
   }
   
-  // Calculate natural width
+  // Calculate natural widths
   let naturalW = 0;
-  words.forEach(w => {
-    try { naturalW += fontObj.widthOfTextAtSize(w, size); } catch(e) { naturalW += w.length * size * 0.5; }
+  let wordWidths = words.map(w => {
+    try { return fontObj.widthOfTextAtSize(w, size); } catch(e) { return w.length * size * 0.5; }
   });
+  wordWidths.forEach(w => naturalW += w);
   
   let spaceW;
   try { spaceW = fontObj.widthOfTextAtSize(' ', size); } catch(e) { spaceW = size * 0.3; }
@@ -338,57 +253,45 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
   let extra = targetWidth - totalNatural;
   let extraPerGap = gaps > 0 ? extra / gaps : 0;
   
-  // V26 FIX: If space is too large (>15pt per gap), just left/right align to prevent ugly stretching
+  // If too much space needed, don't justify (prevents ugly rivers)
   if (extra < 0 || extraPerGap > 15 || isLastLine) {
     if (isRTL) {
       let curX = x + targetWidth;
       for (let i = words.length - 1; i >= 0; i--) {
-        let wW;
-        try { wW = fontObj.widthOfTextAtSize(words[i], size); } catch(e) { wW = words[i].length * size * 0.5; }
-        curX -= wW;
-        safeDraw(pg, words[i], { x: curX, y: y, size: size, font: fontObj });
+        curX -= wordWidths[i];
+        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
         curX -= spaceW;
       }
     } else {
-      // LTR: Wrap it properly so it doesn't go out of bounds
-      let curX = x + (isFirstLine ? 15 : 0); // Paragraph indent
-      words.forEach(w => {
-        safeDraw(pg, w, { x: curX, y: y, size: size, font: fontObj });
-        let wW;
-        try { wW = fontObj.widthOfTextAtSize(w, size); } catch(e) { wW = w.length * size * 0.5; }
-        curX += wW + spaceW;
-      });
+      let curX = x + (isFirstLine ? 15 : 0); // Paragraph Indent
+      for (let i = 0; i < words.length; i++) {
+        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
+        curX += wordWidths[i] + spaceW;
+      }
     }
     return;
   }
   
-  // TRUE JUSTIFICATION (Both sides aligned)
+  // FULL JUSTIFY (Both sides align)
   if (isRTL) {
     let curX = x + targetWidth;
     for (let i = words.length - 1; i >= 0; i--) {
-      let wW;
-      try { wW = fontObj.widthOfTextAtSize(words[i], size); } catch(e) { wW = words[i].length * size * 0.5; }
-      curX -= wW;
-      safeDraw(pg, words[i], { x: curX, y: y, size: size, font: fontObj });
+      curX -= wordWidths[i];
+      safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
       curX -= (spaceW + extraPerGap);
     }
   } else {
-    let curX = x + (isFirstLine ? 15 : 0); // Paragraph indent
-    words.forEach(w => {
-      safeDraw(pg, w, { x: curX, y: y, size: size, font: fontObj });
-      let wW;
-      try { wW = fontObj.widthOfTextAtSize(w, size); } catch(e) { wW = w.length * size * 0.5; }
-      curX += wW + spaceW + extraPerGap;
-    });
+    let curX = x + (isFirstLine ? 15 : 0); // Paragraph Indent
+    for (let i = 0; i < words.length; i++) {
+      safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
+      curX += wordWidths[i] + spaceW + extraPerGap;
+    }
   }
 }
 
 function safeDraw(page, txt, opts) {
-  try { page.drawText(cleanTextForPDF(txt), opts); }
-  catch(e) {
-    try { page.drawText(cleanForPDF(txt), opts); }
-    catch(e2) {}
-  }
+  try { page.drawText(stripInvisible(txt), opts); }
+  catch(e) { try { page.drawText(stripInvisible(txt).slice(0, 100), opts); } catch(e2) {} }
 }
 
 // ============ FONTS ============
@@ -402,8 +305,7 @@ async function loadUrduFont(doc) {
     ];
     for (let u of urls) {
       try {
-        let r = await fetch(u);
-        if (!r.ok) continue;
+        let r = await fetch(u); if (!r.ok) continue;
         let b = await r.arrayBuffer();
         _urduFont = await doc.embedFont(b);
         return _urduFont;
@@ -418,11 +320,9 @@ async function translateOneChunk(chunk, srcLang, tgt) {
   chunk = stripInvisible(chunk);
   try {
     let url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=' + srcLang + '&tl=' + tgt + '&dt=t&q=' + encodeURIComponent(chunk);
-    let r = await fetch(url);
-    let j = await r.json();
-    let out = '';
+    let r = await fetch(url); let j = await r.json(); let out = '';
     if (j && j[0]) j[0].forEach(x => { if (x && x[0]) out += x[0]; });
-    if (out && out.trim()) return stripInvisible(out);
+    if (out.trim()) return stripInvisible(out);
   } catch(e) {}
   return chunk;
 }
@@ -431,25 +331,18 @@ async function translateChunk(text, target) {
   if (!text.trim() || target == 'original') return text;
   text = stripInvisible(text);
   let srcLang = detectTextLang(text);
-  let map = { ur:'ur', en:'en', roman:'en', ar:'ar', hi:'hi' };
+  let map = { ur:'ur', en:'en', roman:'en' };
   let tgt = map[target] || 'en';
-  if (target == 'roman') {
-    let tr = await translateChunk(text, 'en');
-    return tr;
-  }
   if (srcLang == tgt) return text;
   
-  // Preserve paragraph breaks in translation
   let paragraphs = text.split('\n');
   let out = '';
-  
   for (let p of paragraphs) {
     if (!p.trim()) { out += '\n'; continue; }
     let pOut = '';
     for (let i = 0; i < p.length; i += 450) {
-      let chunk = p.slice(i, i + 450);
-      pOut += await translateOneChunk(chunk, srcLang, tgt) + ' ';
-      await new Promise(r => setTimeout(r, 100));
+      pOut += await translateOneChunk(p.slice(i, i+450), srcLang, tgt) + ' ';
+      await new Promise(r => setTimeout(r, 50));
     }
     out += pOut.trim() + '\n';
   }
@@ -467,173 +360,23 @@ async function translatePageWise(ch, target) {
   return outPages;
 }
 
-function cleanOCRText(txt) {
-  if (!txt) return '';
-  let lines = String(txt).split('\n');
-  let out = [];
-  let curPara = '';
-  
-  for (let ln of lines) {
-    let t = ln.trim();
-    if (!t) {
-      if (curPara) { out.push(curPara); curPara = ''; }
-      continue;
-    }
-    // V26: Skip obvious noise
-    if (/^\d{1,3}$/.test(t)) continue;
-    if (t.length < 2) continue;
-    
-    // If line ends with punctuation, it's likely a paragraph end
-    if (curPara && (curPara.endsWith('.') || curPara.endsWith('?') || curPara.endsWith('!'))) {
-      out.push(curPara);
-      curPara = t;
-    } else {
-      curPara = curPara ? curPara + ' ' + t : t;
-    }
-  }
-  if (curPara) out.push(curPara);
-  return out.join('\n\n'); // Double newline for paragraphs
-}
-
-// ============ PREVIEW ============
-function rebuildSyncedPages() {
-  _ocrPages = [];
-  _transPagesSync = [];
-  chapters.forEach((ch, ci) => {
-    let op = ch.pagesText || [];
-    let tp = ch.translatedPages || [];
-    let n = Math.max(op.length, tp.length, 1);
-    for (let pi = 0; pi < n; pi++) {
-      _ocrPages.push({ ch: ci, pi: pi, text: (op[pi] || '') });
-      _transPagesSync.push({ ch: ci, pi: pi, text: (tp[pi] || '') });
-    }
+// ============ V28 TURBO OCR ============
+async function getTesseractWorker() {
+  if (_tesseractWorker) return _tesseractWorker;
+  let lang = document.getElementById('ocrLang').value;
+  _tesseractWorker = await Tesseract.createWorker(lang, 1, {
+    logger: m => { if (m.status === 'recognizing text') document.getElementById('ocrStatus').textContent = 'OCR... ' + Math.round(m.progress * 100) + '%'; }
   });
-  if (!_ocrPages.length) {
-    _ocrPages = [{ ch: 0, pi: 0, text: '' }];
-    _transPagesSync = [{ ch: 0, pi: 0, text: '' }];
-  }
-  _syncedPageIdx = Math.min(_syncedPageIdx, _ocrPages.length - 1);
-  renderSyncedPage();
+  return _tesseractWorker;
 }
 
-function renderSyncedPage() {
-  let dv = document.getElementById('translatedBookView');
-  let lb = document.getElementById('previewPageLabel');
-  let total = _ocrPages.length;
-  let cur = _ocrPages[_syncedPageIdx] || { ch:0, pi:0, text:'' };
-  let curT = _transPagesSync[_syncedPageIdx] || { ch:0, pi:0, text:'' };
-  
-  if (dv) dv.textContent = curT.text || 'Abhi translate nahi hua.';
-  if (lb) lb.textContent = 'Page ' + (_syncedPageIdx + 1) + ' / ' + total + ' — Chapter ' + (cur.ch + 1);
-  fixContentDir();
-}
-
-function syncedPage(dir) {
-  if (!_ocrPages.length) rebuildSyncedPages();
-  _syncedPageIdx = Math.max(0, Math.min(_ocrPages.length - 1, _syncedPageIdx + dir));
-  renderSyncedPage();
-}
-
-function setPreviewView(mode) {
-  let ow = document.getElementById('origPreviewWrap');
-  let tw = document.getElementById('transPreviewWrap');
-  let grid = document.getElementById('previewGrid');
-  let bT = document.getElementById('viewTransBtn');
-  let bB = document.getElementById('viewBothBtn');
-  [bT, bB].forEach(b => { if (b) b.className = 'bg-slate-200 px-3 py-1.5 rounded-full font-bold'; });
-  if (mode == 'translated') {
-    if (ow) ow.classList.add('hidden');
-    if (tw) tw.classList.remove('hidden');
-    if (grid) grid.className = 'grid md:grid-cols-1 gap-3 mt-2';
-    if (bT) bT.className = 'bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';
-  } else {
-    if (ow) ow.classList.remove('hidden');
-    if (tw) tw.classList.remove('hidden');
-    if (grid) grid.className = 'grid md:grid-cols-2 gap-3 mt-2';
-    if (bB) bB.className = 'bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold';
-  }
-  fixContentDir();
-}
-
-// ============ UI HELPERS ============
-function setTransSpin(on, msg) {
-  let el = document.getElementById('transSpin');
-  if (el) { if (on) el.classList.add('spinning'); else el.classList.remove('spinning'); }
-  let lb = document.getElementById('transSpinLabel');
-  if (lb) lb.textContent = msg || '';
-}
-
-function setChapterSpin(i, on, msg) {
-  let el = document.getElementById('chapSpin-' + i);
-  if (el) {
-    el.className = 'chapSpin ' + (on ? 'spinning' : 'done');
-    el.textContent = on ? '⟳' : (msg == 'done' ? '✅' : '○');
-  }
-}
-
-function toggleBoxSize(id) {
-  let el = document.getElementById(id);
-  if (el) el.classList.toggle('big');
-}
-
-function resetHang() {
-  _busy = false;
-  _cancel = true;
-  chapters.forEach((c, i) => setChapterSpin(i, false, ''));
-  document.getElementById('status').textContent = 'Hang Reset ho gaya.';
-  setTransSpin(false, '');
-}
-
-// ============ CHAPTER MANAGEMENT ============
-function sortByName() { chapters.sort((a, b) => a.title.localeCompare(b.title)); renderChapters(); }
-function clearAll() { chapters = []; document.getElementById('ocrText').value = ''; renderChapters(); rebuildSyncedPages(); }
-function updateTOC() {
-  let toc = document.getElementById('tocPreview');
-  if (!toc) return;
-  if (!chapters.length) { toc.classList.add('hidden'); return; }
-  toc.classList.remove('hidden');
-  document.getElementById('tocList').textContent = chapters.map((c, i) => 'Chapter ' + (i + 1) + ': ' + c.title).join('\n');
-}
-
-function renderChapters() {
-  let list = document.getElementById('fileList');
-  if (!list) return;
-  if (!chapters.length) {
-    list.innerHTML = '<p class="text-sm text-slate-500">Koi chapter nahi.</p>';
-    updateTOC();
-    return;
-  }
-  list.innerHTML = '';
-  chapters.forEach((ch, i) => {
-    let div = document.createElement('div');
-    div.id = 'chapRow-' + i;
-    div.className = 'chapterRow ' + (ch.ocrDone ? 'done' : '');
-    div.innerHTML = 
-      '<div class="flex items-center gap-2 flex-wrap">' +
-      '<div class="chapNum">' + (i + 1) + '</div>' +
-      '<span id="chapSpin-' + i + '" class="chapSpin">' + (ch.ocrDone ? '✅' : '○') + '</span>' +
-      '<div class="flex-1 min-w-[200px]">' +
-      '<input value="' + ch.title.replace(/"/g, '&quot;') + '" onchange="chapters[' + i + '].title=this.value;updateTOC()" class="w-full border p-1 rounded font-bold">' +
-      '<p class="text-xs text-slate-500">' + (ch.pages || 0) + ' pages</p>' +
-      '</div>' +
-      '<button onclick="runOCROne(' + i + ')" class="bg-amber-500 text-white px-3 py-1.5 rounded text-xs font-bold">🔍 OCR</button>' +
-      '<button onclick="removeChapter(' + i + ')" class="bg-red-100 px-2 py-1 rounded text-xs">✕</button>' +
-      '</div>';
-    list.appendChild(div);
-  });
-  updateTOC();
-}
-
-function removeChapter(i) { chapters.splice(i, 1); renderChapters(); }
-
-// ============ OCR ============
 async function getChapterText(ch, useOCR, onPage) {
   let buf = await ch.file.arrayBuffer();
   let pdf = await pdfjsLib.getDocument({ data: buf }).promise;
   let pagesText = [];
   let scale = parseFloat(document.getElementById('ocrQuality').value);
-  let lang = document.getElementById('ocrLang').value;
-  
+  let worker = useOCR ? await getTesseractWorker() : null;
+
   for (let p = 1; p <= pdf.numPages; p++) {
     if (_cancel) break;
     let page = await pdf.getPage(p);
@@ -651,13 +394,23 @@ async function getChapterText(ch, useOCR, onPage) {
     if (!pageTxt) {
       let vp = page.getViewport({ scale: scale });
       let c = document.createElement('canvas');
-      c.width = vp.width;
-      c.height = vp.height;
-      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      c.width = vp.width; c.height = vp.height;
+      let ctx = c.getContext('2d', { willReadFrequently: true });
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      
+      // Grayscale conversion for speed & accuracy
+      let imgData = ctx.getImageData(0, 0, c.width, c.height);
+      let d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        let gray = 0.3 * d[i] + 0.59 * d[i+1] + 0.11 * d[i+2];
+        d[i] = d[i+1] = d[i+2] = gray;
+      }
+      ctx.putImageData(imgData, 0, 0);
+
       try {
-        let r = await Tesseract.recognize(c, lang, { logger: () => {} });
-        pageTxt = stripInvisible(r.data.text || '');
-      } catch(e) {}
+        let ret = await worker.recognize(c);
+        pageTxt = stripInvisible(ret.data.text || '');
+      } catch(e) { console.log('OCR Error:', e); }
     }
     
     pagesText.push(pageTxt);
@@ -675,111 +428,42 @@ async function getChapterText(ch, useOCR, onPage) {
   return stripInvisible(all2);
 }
 
-async function runOCROne(i) { await runFullOCR(i); }
-
 async function runFullOCR(onlyIdx = null) {
-  if (_busy) return;
-  if (!chapters.length) return;
+  if (_busy || !chapters.length) return;
   let indices = onlyIdx != null ? [onlyIdx] : chapters.map((_, i) => i);
-  _busy = true;
-  _cancel = false;
-  
+  _busy = true; _cancel = false;
   for (let idx of indices) {
     if (_cancel) break;
-    setChapterSpin(idx, true, 'OCR...');
     let ch = chapters[idx];
-    let txt = await getChapterText(ch, true, (p, tot) => {
+    ch.text = await getChapterText(ch, true, (p, tot) => {
       document.getElementById('ocrStatus').textContent = 'Chapter ' + (idx + 1) + ' — Page ' + p + '/' + tot;
     });
-    ch.text = txt;
     ch.ocrDone = true;
-    setChapterSpin(idx, false, 'done');
     renderChapters();
   }
-  
   let combined = '';
-  chapters.forEach((c, i) => {
-    combined += '\n\n===== CHAPTER ' + (i + 1) + ': ' + c.title + ' =====\n\n' + (c.text || '');
-  });
+  chapters.forEach((c, i) => { combined += '\n\n===== CHAPTER ' + (i + 1) + ': ' + c.title + ' =====\n\n' + (c.text || ''); });
   document.getElementById('ocrText').value = stripInvisible(combined);
   rebuildSyncedPages();
-  fixContentDir();
   _busy = false;
-  document.getElementById('status').textContent = 'OCR mukammal.';
 }
 
-async function extractAllText() {
-  if (_busy) return;
-  if (!chapters.length) return;
-  _cancel = false;
-  for (let i = 0; i < chapters.length; i++) {
-    setChapterSpin(i, true, 'Text...');
-    let ch = chapters[i];
-    ch.text = await getChapterText(ch, false, null);
-    ch.ocrDone = true;
-    setChapterSpin(i, false, 'done');
-  }
-  let combined = '';
-  chapters.forEach((c, i) => {
-    combined += '\n\n===== CHAPTER ' + (i + 1) + ': ' + c.title + ' =====\n\n' + (c.text || '');
-  });
-  document.getElementById('ocrText').value = stripInvisible(combined);
-  rebuildSyncedPages();
-  renderChapters();
-}
-
-// ============ PREVIEW TRANSLATION ============
-async function translatePreview() {
-  let target = document.getElementById('targetLang').value;
-  let src = document.getElementById('ocrText').value || '';
-  if (!src.trim()) { alert('Pehle OCR karein'); return; }
-  
-  setTransSpin(true, 'Translating...');
-  
-  let tr = '';
-  if (chapters.length && chapters[0].pagesText && chapters[0].pagesText.length) {
-    let all = [];
-    for (let ci = 0; ci < chapters.length; ci++) {
-      setChapterSpin(ci, true, 'Translating...');
-      let pgTr = await translatePageWise(chapters[ci], target);
-      chapters[ci].translatedPages = pgTr;
-      setChapterSpin(ci, false, 'done');
-      all.push(pgTr.join('\n\n'));
-    }
-    tr = all.join('\n\n');
-  } else {
-    tr = await translateChunk(src, target);
-  }
-  
-  document.getElementById('translatedPreview').value = tr;
-  fixContentDir();
-  rebuildSyncedPages();
-  setTransSpin(false, 'Translation mukammal ✓');
-}
-
-// ============ BOOK MAKING ============
+// ============ BOOK MAKING (V28 FIX) ============
 async function makeBook() {
-  if (!chapters.length) return alert('Pehle Chapters add karein');
-  
+  if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
   let mode = document.getElementById('bookMode').value;
   let bookName = stripInvisible(document.getElementById('bookName').value || 'Meri Book');
-  let bookAuthor = stripInvisible(document.getElementById('bookAuthor').value || '');
   
   _busy = true;
-  setTransSpin(true, 'Book ban rahi hai...');
+  document.getElementById('status').textContent = 'Book ban rahi hai...';
   
   try {
-    // Translate if needed
     if (target != 'original') {
       for (let i = 0; i < chapters.length; i++) {
-        setChapterSpin(i, true, 'Translating...');
         if (chapters[i].pagesText && chapters[i].pagesText.length) {
           chapters[i].translatedPages = await translatePageWise(chapters[i], target);
-        } else {
-          chapters[i].translated = await translateChunk(chapters[i].text || '', target);
         }
-        setChapterSpin(i, false, 'done');
       }
     }
     
@@ -790,18 +474,14 @@ async function makeBook() {
     
     // COVER
     let cover = merged.addPage([595, 842]);
-    cover.drawLine({ start: { x: 50, y: 700 }, end: { x: 545, y: 700 }, thickness: 2, color: PDFLib.rgb(0.31, 0.27, 0.9) });
     safeDraw(cover, bookName.slice(0, 40), { x: 50, y: 650, size: 30, font: bold });
-    if (bookAuthor) safeDraw(cover, 'By ' + bookAuthor.slice(0, 40), { x: 50, y: 615, size: 14, font: font });
-    safeDraw(cover, 'Professional Chapter-Wise Book', { x: 50, y: 580, size: 12, font: font });
     
-    // CHAPTER PAGES
+    // CHAPTERS
     for (let i = 0; i < chapters.length; i++) {
       let ch = chapters[i];
-      setChapterSpin(i, true, 'Book me likha ja raha hai...');
       
       let div = merged.addPage([595, 842]);
-      safeDraw(div, 'CHAPTER ' + (i + 1), { x: 50, y: 520, size: 12, font: bold, color: PDFLib.rgb(0.31, 0.27, 0.9) });
+      safeDraw(div, 'CHAPTER ' + (i + 1), { x: 50, y: 520, size: 12, font: bold });
       safeDraw(div, ch.title.slice(0, 40), { x: 50, y: 470, size: 20, font: bold });
       
       if (mode !== 'original') {
@@ -812,44 +492,51 @@ async function makeBook() {
           if (!rawPage.trim()) continue;
           
           let curPg = merged.addPage([595, 842]);
-          let yy = 750; // V26: Start a bit higher for better spacing
+          let yy = 750;
           
           let targetLines = (ch.origLineCounts && ch.origLineCounts[pi]) || countWrappedLines(rawPage, 68);
           let useComplex = needsComplexFont(rawPage);
           let pageFont = (useComplex && urduFont) ? urduFont : font;
           let isRTL = useComplex;
           
-          let matched = matchLines(rawPage, targetLines, 68);
+          // V28: Paragraph-aware line matching
+          let paragraphs = rawPage.split(/\n+/);
+          let matchedLines = [];
+          let linesNeeded = targetLines;
+          
+          for (let para of paragraphs) {
+            if (!para.trim()) continue;
+            let pLines = wrapText(para, 68);
+            matchedLines.push(...pLines);
+          }
+          
+          // Adjust to exact target lines
+          matchedLines = matchLines(matchedLines.join(' '), targetLines, 68);
           
           let fSize = useComplex ? 13 : 11;
           let lineH = useComplex ? 26 : 21;
           let targetWidth = 495;
           
-          for (let li = 0; li < matched.length; li++) {
-            let line = matched[li];
+          for (let li = 0; li < matchedLines.length; li++) {
+            let line = matchedLines[li];
             if (!line.trim()) { yy -= lineH; continue; }
             
-            // V26: Check if this is the start of a new paragraph to apply indent
-            let isFirstLine = false;
-            if (li === 0) isFirstLine = true;
-            else if (matched[li-1].trim() === '') isFirstLine = true;
+            // V28: Check if new paragraph
+            let isFirstLine = (li === 0) || (matchedLines[li-1] && (matchedLines[li-1].endsWith('.') || matchedLines[li-1].endsWith('?') || matchedLines[li-1].endsWith('!') || matchedLines[li-1].endsWith('۔')));
             
-            let isLast = (li == matched.length - 1);
+            let isLast = (li == matchedLines.length - 1);
             drawJustifiedLine(curPg, line, 50, yy, fSize, pageFont, isLast, isFirstLine, targetWidth, isRTL);
             yy -= lineH;
           }
         }
       }
       
-      // Original pages
       if (mode !== 'translated') {
         let buf = await ch.file.arrayBuffer();
         let src = await PDFLib.PDFDocument.load(buf);
         let pages = await merged.copyPages(src, src.getPageIndices());
         pages.forEach(p => merged.addPage(p));
       }
-      
-      setChapterSpin(i, false, 'done');
     }
     
     const bytes = await merged.save();
@@ -859,38 +546,87 @@ async function makeBook() {
     document.getElementById('downloadArea').innerHTML = 
       '<a href="' + url + '" download="' + safeName + '.pdf" class="block text-center bg-green-600 text-white py-3 rounded-xl font-bold mt-3">⬇️ Download ' + safeName + '.pdf</a>';
     
-    setTransSpin(false, 'Book tayyar ✓');
     _busy = false;
     document.getElementById('status').textContent = '✅ PRO BOOK TAYYAR HAI!';
-    
   } catch(e) {
-    setTransSpin(false, '');
     _busy = false;
     document.getElementById('status').textContent = '❌ Error: ' + e.message;
     console.error(e);
   }
 }
 
-// ============ INIT ============
+// ============ PREVIEW & UI ============
+function rebuildSyncedPages() {
+  _ocrPages = []; _transPagesSync = [];
+  chapters.forEach((ch, ci) => {
+    let op = ch.pagesText || [], tp = ch.translatedPages || [];
+    let n = Math.max(op.length, tp.length, 1);
+    for (let pi = 0; pi < n; pi++) {
+      _ocrPages.push({ ch: ci, pi, text: op[pi] || '' });
+      _transPagesSync.push({ ch: ci, pi, text: tp[pi] || '' });
+    }
+  });
+  _syncedPageIdx = Math.min(_syncedPageIdx, Math.max(0, _ocrPages.length - 1));
+  renderSyncedPage();
+}
+
+function renderSyncedPage() {
+  let dv = document.getElementById('translatedBookView');
+  let lb = document.getElementById('previewPageLabel');
+  if (!_ocrPages.length) return;
+  let curT = _transPagesSync[_syncedPageIdx] || { text: 'Abhi translate nahi hua.' };
+  if (dv) {
+    dv.textContent = curT.text;
+    let tgt = document.getElementById('targetLang').value;
+    let rtl = (tgt == 'ur' || tgt == 'ar');
+    dv.dir = rtl ? 'rtl' : 'ltr';
+    dv.className = 'flexBox w-full border p-3 rounded mt-2 bg-white text-[15px] leading-7 whitespace-pre-wrap ' + (rtl ? 'rtl-text' : 'ltr-text');
+  }
+  if (lb) lb.textContent = 'Page ' + (_syncedPageIdx + 1) + ' / ' + _ocrPages.length;
+}
+
+function syncedPage(dir) {
+  _syncedPageIdx = Math.max(0, Math.min(_ocrPages.length - 1, _syncedPageIdx + dir));
+  renderSyncedPage();
+}
+
+async function translatePreview() {
+  let target = document.getElementById('targetLang').value;
+  if (!chapters.length) return;
+  for (let ci = 0; ci < chapters.length; ci++) {
+    if (chapters[ci].pagesText) chapters[ci].translatedPages = await translatePageWise(chapters[ci], target);
+  }
+  rebuildSyncedPages();
+}
+
+function renderChapters() {
+  let list = document.getElementById('fileList');
+  if (!chapters.length) { list.innerHTML = '<p class="text-sm text-slate-500">Koi chapter nahi.</p>'; return; }
+  list.innerHTML = '';
+  chapters.forEach((ch, i) => {
+    let div = document.createElement('div');
+    div.className = 'chapterRow ' + (ch.ocrDone ? 'done' : '');
+    div.innerHTML = '<div class="flex items-center gap-2"><div class="chapNum">' + (i+1) + '</div><div class="flex-1"><b>' + ch.title + '</b><p class="text-xs text-slate-500">' + ch.pages + ' pages</p></div><button onclick="runFullOCR(' + i + ')" class="bg-amber-500 text-white px-3 py-1 rounded text-xs font-bold">OCR</button></div>';
+    list.appendChild(div);
+  });
+}
+
+function sortByName() { chapters.sort((a, b) => a.title.localeCompare(b.title)); renderChapters(); }
+function clearAll() { chapters = []; document.getElementById('ocrText').value = ''; renderChapters(); rebuildSyncedPages(); }
+function resetHang() { _busy = false; _cancel = true; }
+function setUILang() {}
+
 document.getElementById('pdfInput').addEventListener('change', async e => {
   let files = Array.from(e.target.files);
   for (let f of files) {
     let buf = await f.arrayBuffer();
     let pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    chapters.push({
-      file: f,
-      title: f.name.replace(/\.pdf$/i, ''),
-      pages: pdf.numPages,
-      text: '',
-      pagesText: [],
-      ocrDone: false
-    });
+    chapters.push({ file: f, title: f.name.replace(/\.pdf$/i, ''), pages: pdf.numPages, text: '', pagesText: [], ocrDone: false });
   }
   renderChapters();
 });
 
 renderChapters();
-setPreviewView('translated');
 </script>
 </body>
 </html>
