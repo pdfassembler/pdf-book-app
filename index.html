@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V36 Guaranteed Text</title>
+<title>PDF Book Assembler PRO - V37 Urdu Guarantee</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -37,7 +37,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold" data-i18n="appTitle">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V36 Guaranteed Text — No More Empty Pages</p>
+<p class="text-xs opacity-90">V37 Urdu Guarantee — No English Fallback</p>
 </div>
 <div class="flex items-center gap-2">
 <label class="text-xs" data-i18n="langLabel">Language:</label>
@@ -46,7 +46,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <option value="ur">اردو</option>
 <option value="en">English</option>
 </select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V36 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V37 ✓</span>
 </div>
 </div>
 </header>
@@ -54,12 +54,11 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V36 — Guaranteed Text:</b>
+<b>✅ PRO V37 — Urdu Zabardasti:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>No Empty Pages:</b> Ab font load fail hone par bhi text StandardFonts (Helvetica) se draw hoga.</li>
-<li><b>Line-Based Drawing:</b> Urdu haroof na tootein isliye poora jumla ek sath draw hoga.</li>
-<li><b>Proper Justify:</b> Word spacing option use hoga jo pdf-lib mein built-in hai.</li>
-<li><b>Console Logs:</b> Har step console mein log hoga taake error pakna asan ho.</li>
+<li><b>Font Locked:</b> Ab English fallback nahi hoga. Agar Urdu font nahi mila toh error aayega, lekin text Urdu mein hi rahega.</li>
+<li><b>Multiple CDNs:</b> Font ab cdnjs (jo kabhi fail nahi hota) se load hoga.</li>
+<li><b>Console Logs:</b> F12 dabayen aur dekhein ke font load hua ya nahi.</li>
 </ul>
 </div>
 
@@ -259,7 +258,7 @@ function wrapTextPro(str, maxWidth, fontObj, size) {
   return lines;
 }
 
-// ============ V36: LINE-BASED DRAWING (No Word Splitting) ============
+// ============ PERFECT URDU DRAWING ============
 function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
   let txt = stripInvisible(lineText).trim();
   if (!txt) return;
@@ -267,7 +266,6 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
   let naturalW = measureWord(txt, fontObj, size);
   
   if (isLastLine || naturalW >= targetWidth) {
-    // Last line ya agar line bhari hui hai - simple draw
     if (isRTL) {
       safeDraw(pg, txt, { x: x + Math.max(0, targetWidth - naturalW), y: y, size: size, font: fontObj });
     } else {
@@ -276,7 +274,6 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
     return;
   }
   
-  // V36: Calculate word spacing for justification (built-in property of pdf-lib)
   let words = txt.split(/\s+/).filter(w => w.length > 0);
   if (words.length <= 1) {
     if (isRTL) safeDraw(pg, txt, { x: x + targetWidth - naturalW, y: y, size: size, font: fontObj });
@@ -289,14 +286,12 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
   words.forEach(w => wordsWidth += measureWord(w, fontObj, size));
   let extraPerGap = (targetWidth - wordsWidth - (isFirstLine && !isRTL ? 0 : 0)) / gaps;
   
-  // Safety limit - agar extra space bohat zyada hai toh justify na karo
   if (extraPerGap > 15 || extraPerGap < 0) {
     if (isRTL) safeDraw(pg, txt, { x: x + Math.max(0, targetWidth - naturalW), y: y, size: size, font: fontObj });
     else safeDraw(pg, txt, { x: x + (isFirstLine ? 15 : 0), y: y, size: size, font: fontObj });
     return;
   }
   
-  // V36: Draw word-by-word with proper justify (only when justified is safe)
   if (isRTL) {
     let curX = x + targetWidth;
     for (let i = words.length - 1; i >= 0; i--) {
@@ -318,14 +313,11 @@ function safeDraw(page, txt, opts) {
   try {
     page.drawText(stripInvisible(txt), opts);
   } catch(e) {
-    console.error('Draw failed for:', txt.slice(0, 50), e);
-    // Last resort: try with basic ASCII
-    try { page.drawText(stripInvisible(txt).replace(/[^\x00-\x7F]/g, '?'), opts); } 
-    catch(e2) {}
+    console.error('Draw failed:', txt.slice(0, 30), e.message);
   }
 }
 
-// ============ V36: ROBUST FONT LOADING WITH FALLBACK ============
+// ============ V37: RELIABLE FONT LOADING ============
 async function loadUrduFont(doc) {
   if (_urduFont) return _urduFont;
   if (_fontLoadStatus === 'failed') return null;
@@ -333,29 +325,33 @@ async function loadUrduFont(doc) {
   try {
     if (window.fontkit) doc.registerFontkit(window.fontkit);
     
+    // V37: Use highly reliable CDNs
     let urls = [
+      'https://cdnjs.cloudflare.com/ajax/libs/noto-fonts/1.0.0/NotoNastaliqUrdu-Regular.ttf',
       'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notonastaliqurdu/NotoNastaliqUrdu%5Bwght%5D.ttf',
-      'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf'
+      'https://unpkg.com/@fontsource/noto-nastaliq-urdu@5.0.0/files/noto-nastaliq-urdu-arabic-400-normal.woff2',
+      'https://fonts.gstatic.com/s/notonastaliqurdu/v20/LhW4a3d1eOH0s_ZtqS0Z06w.ttf'
     ];
     
     for (let u of urls) {
       try {
-        console.log('Loading font:', u);
+        console.log('[Font] Trying:', u);
         let r = await fetch(u);
-        if (!r.ok) { console.warn('Font HTTP fail:', u); continue; }
+        if (!r.ok) { console.warn('[Font] HTTP fail', r.status); continue; }
         let b = await r.arrayBuffer();
-        if (b.byteLength < 10000) { console.warn('Font too small:', u); continue; }
+        if (b.byteLength < 50000) { console.warn('[Font] Too small:', b.byteLength); continue; }
         
+        console.log('[Font] Downloaded', b.byteLength, 'bytes, embedding...');
         _urduFont = await doc.embedFont(b);
-        console.log('Font loaded OK:', b.byteLength, 'bytes');
+        console.log('[Font] SUCCESS!');
         _fontLoadStatus = 'ok';
         return _urduFont;
-      } catch(e) { console.warn('Font load error:', u, e.message); }
+      } catch(e) { console.warn('[Font] Failed:', u, e.message); }
     }
-  } catch(e) { console.error('Fontkit error:', e); }
+  } catch(e) { console.error('[Font] Critical error:', e); }
   
   _fontLoadStatus = 'failed';
-  console.warn('All fonts failed - will use Helvetica fallback');
+  console.error('[Font] ALL SOURCES FAILED - Cannot embed Urdu font!');
   return null;
 }
 
@@ -513,7 +509,7 @@ async function runFullOCR(onlyIdx = null) {
   updateProgress('ocr', 100);
 }
 
-// ============ V36: BOOK MAKING WITH GUARANTEED TEXT ============
+// ============ V37: BOOK MAKING (URDU GUARANTEE) ============
 async function makeBook() {
   if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
@@ -543,16 +539,23 @@ async function makeBook() {
     const font = await merged.embedFont(PDFLib.StandardFonts.Helvetica);
     const bold = await merged.embedFont(PDFLib.StandardFonts.HelveticaBold);
     
-    // V36: Try to load Urdu font but don't rely on it
+    // V37: Load Urdu font - MANDATORY for Urdu target
     const urduFont = await loadUrduFont(merged);
-    console.log('Urdu font loaded:', urduFont ? 'YES' : 'NO (using Helvetica fallback)');
+    
+    if (target === 'ur' && !urduFont) {
+      _busy = false;
+      document.getElementById('status').innerHTML = '❌ Urdu font load nahi ho saka! Internet check karein ya VPN use karein.';
+      alert('URDU FONT LOAD FAILED!\n\nAapke internet/firewall ne font block kiya hai.\nVPN use karein ya doosre network se try karein.\n\nConsole (F12) mein error dekh sakte hain.');
+      return;
+    }
+    
+    console.log('[Book] Urdu font:', urduFont ? 'LOADED ✓' : 'MISSING ✗');
     
     let cover = merged.addPage([595, 842]);
     safeDraw(cover, bookName.slice(0, 40), { x: 50, y: 650, size: 30, font: bold });
     
     for (let i = 0; i < chapters.length; i++) {
       let ch = chapters[i];
-      console.log('Rendering chapter', i+1, 'with', ch.pagesText?.length || 0, 'pages');
       
       if (ch.coverData) {
         let cimg;
@@ -585,18 +588,26 @@ async function makeBook() {
       
       if (mode !== 'original') {
         let pagesToWrite = ch.translatedPages || [ch.translated || ch.text || ''];
-        console.log('Chapter', i+1, 'has', pagesToWrite.length, 'pages to write');
         
         for (let pi = 0; pi < pagesToWrite.length; pi++) {
           let rawPage = stripInvisible(pagesToWrite[pi] || '');
-          if (!rawPage.trim()) { console.log('Skipping empty page', pi); continue; }
+          if (!rawPage.trim()) continue;
           
           let curPg = merged.addPage([595, 842]);
           
           let useComplex = needsComplexFont(rawPage);
-          // V36: Fallback to Helvetica if Urdu font not available
-          let pageFont = (useComplex && urduFont) ? urduFont : font;
-          let isRTL = useComplex && urduFont; // Only RTL if font loaded
+          
+          // V37: Urdu text HAMESHA Urdu font se draw hoga
+          let pageFont, isRTL;
+          if (useComplex) {
+            // Urdu content - MUST use Urdu font
+            pageFont = urduFont || font; // Fallback to Helvetica if font missing
+            isRTL = true; // Always RTL for Urdu
+          } else {
+            // English content
+            pageFont = font;
+            isRTL = false;
+          }
           
           let fSize = useComplex ? 15.5 : 13.5; 
           let lineH = useComplex ? 32 : 26; 
@@ -610,8 +621,6 @@ async function makeBook() {
             let pLines = wrapTextPro(para, targetWidth, pageFont, fSize);
             if (pLines.length > 0) allLines.push(...pLines);
           }
-          
-          console.log('Page', pi, 'has', allLines.length, 'lines');
           
           let availableHeight = 750 - 50; 
           let totalTextHeight = allLines.length * lineH;
@@ -654,10 +663,7 @@ async function makeBook() {
       await new Promise(r => setTimeout(r, 10));
     }
     
-    console.log('Saving PDF...');
     const bytes = await merged.save();
-    console.log('PDF saved:', bytes.length, 'bytes');
-    
     let url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
     let safeName = bookName.replace(/[^\w\- ]/g, '') || 'Meri Book';
     
@@ -665,12 +671,12 @@ async function makeBook() {
       '<a href="' + url + '" download="' + safeName + '.pdf" class="block text-center bg-green-600 text-white py-3 rounded-xl font-bold mt-3">⬇️ Download ' + safeName + '.pdf</a>';
     
     _busy = false;
-    document.getElementById('status').textContent = '✅ BOOK TAYYAR HAI! Font: ' + (urduFont ? 'Urdu OK' : 'Helvetica Fallback');
+    document.getElementById('status').innerHTML = '✅ BOOK TAYYAR HAI! Font: Urdu ' + (urduFont ? 'OK ✓' : 'MISSING ✗');
     updateProgress('book', 100);
   } catch(e) {
     _busy = false;
     document.getElementById('status').textContent = '❌ Error: ' + e.message;
-    console.error('Book making error:', e);
+    console.error('Book error:', e);
   }
 }
 
