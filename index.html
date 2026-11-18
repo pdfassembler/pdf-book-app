@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ur"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V42 RESUME + AUTO-RETRY</title>
+<title>PDF Book Assembler PRO - V43 BATCH + LITE (300 Page in 1 Din)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 <style>body{font-family:Inter,system-ui}.card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:16px}.chapterRow{border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#f8fafc}.chapterRow.done{border-color:#22c55e;background:#f0fdf4}.chapNum{width:44px;height:44px;min-width:44px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#a855f7);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}#fileList{max-height:640px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.flexBox{resize:vertical;overflow:auto;min-height:160px;height:160px}.rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu',serif}.ltr-text{direction:ltr;text-align:left}.progress-container{width:100%;background:#e2e8f0;border-radius:9999px;height:10px;overflow:hidden;margin-top:8px}.progress-bar{height:100%;background:#4f46e5;width:0%}.progress-text{font-size:12px;color:#64748b;margin-top:4px;text-align:right;font-weight:bold}</style></head>
 <body class="bg-slate-100 min-h-screen">
-<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10"><div class="max-w-6xl mx-auto flex justify-between items-center"><div><h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1><p class="text-xs opacity-90">V42 RESUME + AUTO-RETRY — Urdu ab Image se banega, symbols nahi aayenge</p></div><select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1"><option value="roman">Roman Urdu</option><option value="ur">اردو</option><option value="en">English</option></select></div></header>
+<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10"><div class="max-w-6xl mx-auto flex justify-between items-center"><div><h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1><p class="text-xs opacity-90">V43 BATCH + LITE (300 Page in 1 Din) — Urdu ab Image se banega, symbols nahi aayenge</p></div><select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1"><option value="roman">Roman Urdu</option><option value="ur">اردو</option><option value="en">English</option></select></div></header>
 <main class="max-w-7xl mx-auto p-4 space-y-4">
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm"><b>✅ V38 me kya fix hua:</b><ul class="list-disc ml-5 mt-1"><li><b>Root cause:</b> pdf-lib Urdu shaping nahi karta, is liye letters toot jate thay. Ab Urdu page <b>Canvas pe render</b> kar ke image ki tarah PDF me jayega — jaisa preview me dikhta hai, waisa hi PDF me aayega.</li><li><b>Preview = PDF:</b> Jo text Preview me hai, wohi ab Book me jayega. Agar Preview khali hai to pehle <b>Translate Karo</b> dabayen.</li><li><b>Auto-translate:</b> Agar aap bhool jayen to Book banate waqt khud translate ho jayega.</li></ul></div>
 <div class="bg-white rounded-xl p-3 border flex flex-wrap gap-3 items-center text-sm"><b>Settings:</b><label>OCR Language:</label><select id="ocrLang" class="border rounded px-2 py-1"><option value="urd">Urdu Only</option><option value="eng">English Only</option><option value="urd+eng">Urdu + English</option></select><label>OCR Quality:</label><select id="ocrQuality" class="border rounded px-2 py-1"><option value="2">High - 2.0</option><option value="1.5" selected>Medium - 1.5</option><option value="1.2">Fast - 1.2</option></select></div>
@@ -31,7 +31,8 @@
 <button onclick="clearGeminiKey()" class="bg-slate-200 px-3 py-2 rounded font-bold text-sm">Clear</button>
 </div>
 <div class="flex flex-wrap gap-2 mt-2 items-center text-sm">
-<label>AI Model:</label><select id="geminiModel" class="border rounded px-2 py-1"><option value="auto">AUTO - Jo chal raha ho, khud dhoond lega (Recommended)</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview (Naye users ke liye)</option><option value="gemini-3.0-flash">Gemini 3.0 Flash (Screenshot wala)</option><option value="gemini-2.5-flash">Gemini 2.5 Flash (Purana - ab band)</option><option value="gemini-2.0-flash">Gemini 2.0 Flash</option></select>
+<label>AI Model:</label><label>Batch (1 request me kitne page?):</label><select id="batchSize" class="border rounded px-2 py-1"><option value="5" selected>5 Page / Request (Recommended)</option><option value="10">10 Page / Request (Sab se tez, bari kitab ke liye)</option><option value="3">3 Page / Request (Sab se saaf)</option><option value="1">1 Page / Request (Purana tareeqa)</option></select>
+<label>AI Model:</label><select id="geminiModel" class="border rounded px-2 py-1"><option value="auto">AUTO - Flash khatam ho to khud Lite pe chala jayega (Recommended)</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option><option value="gemini-3-flash-preview">Gemini 3 Flash Preview (Naye users ke liye)</option><option value="gemini-3.0-flash">Gemini 3.0 Flash (Screenshot wala)</option><option value="gemini-2.5-flash">Gemini 2.5 Flash (Purana - ab band)</option><option value="gemini-2.0-flash">Gemini 2.0 Flash</option><option value="gemini-3-flash-lite">Gemini 3 Flash-Lite (500 / din)</option><option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (500 / din)</option></select>
 <label>Style:</label><select id="aiStyle" class="border rounded px-2 py-1"><option value="kitab">Kitab wali saaf Urdu</option><option value="aasan">Bilkul aasan Urdu (Bachon jaisi)</option><option value="roman">Roman Urdu</option><option value="english">Saaf English</option></select>
 <span id="geminiKeyStatus" class="text-xs font-bold text-slate-500">Key: Nahi lagi</span>
 </div>
@@ -194,7 +195,7 @@ async function geminiTranslateOne(text, target){
   let chosen=document.getElementById('geminiModel').value||'auto';
   let style=document.getElementById('aiStyle').value||'kitab';
   // V40 FIX: Google ne 2.5 band kar diya, is liye ek ke baad ek try karo
-  let models = chosen==='auto' ? ['gemini-3-flash-preview','gemini-3.0-flash','gemini-2.5-flash','gemini-2.0-flash','gemini-2.5-flash-lite'] : [chosen];
+  let models = chosen==='auto' ? ['gemini-3-flash-preview','gemini-3.0-flash','gemini-3-flash-lite','gemini-2.5-flash-lite','gemini-2.0-flash'] : [chosen];
   let lastErr='';
   for(let model of models){
     try{
@@ -202,7 +203,7 @@ async function geminiTranslateOne(text, target){
       let body={contents:[{parts:[{text: aiPromptFor(target,style)+text}]}], generationConfig:{temperature:0.2, maxOutputTokens:8000}};
       let r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       let j=await r.json();
-      if(!r.ok){ lastErr=(j.error&&j.error.message)||('HTTP '+r.status); console.warn('Model fail:',model,lastErr); if(/not.*available|not found|404/i.test(lastErr)) continue; throw new Error(lastErr); }
+      if(!r.ok){ lastErr=(j.error&&j.error.message)||('HTTP '+r.status); console.warn('Model fail:',model,lastErr); if(/not.*available|not found|404|quota|exceeded/i.test(lastErr)) continue; throw new Error(lastErr); }
       let out=j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts ? j.candidates[0].content.parts.map(p=>p.text||'').join('') : '';
       if(!out.trim()) throw new Error('Gemini ne khali jawab diya');
       // Kaunsa model chala, status me dikhao
@@ -230,31 +231,59 @@ async function callGeminiWithRetry(text, target, pageLabel){
     }
   }
 }
+
 async function geminiTranslatePageWise(ch, target, cb){
   let srcPages=ch.pagesText||[ch.text||'']; let out=[];
-  // RESUME: pehle se hue pages ko dobara mat karo
   let prev = ch.translatedPages || [];
-  let startFrom = 0;
-  // Agar prev me khali string nahi aur length same hai to wahan se
-  for(let i=0;i<prev.length;i++){ if(prev[i] && prev[i].trim()) startFrom=i+1; else break; }
-  // out ko prev se bharo taake purana kaam zaya na ho
+  let batchSize = parseInt(document.getElementById('batchSize')?.value||'5');
   for(let i=0;i<srcPages.length;i++){ out.push(prev[i]||''); }
-  // Progress save karne ke liye key: chapter title + pages
-  for(let pi=0; pi<srcPages.length; pi++){
-    if(pi < startFrom){ if(cb) cb((pi+1)/srcPages.length*100); continue; } // pehle se hua hua, skip
-    let pg=cleanOCRText(stripInvisible(srcPages[pi]||'')); if(!pg.trim()){ out[pi]=''; continue; }
-    try{
-      if(pg.length>3500){ let mid=Math.floor(pg.length/2); let a=await callGeminiWithRetry(pg.slice(0,mid),target,'Page '+(pi+1)); await sleep(800); let b=await callGeminiWithRetry(pg.slice(mid),target,'Page '+(pi+1)+' (2nd half)'); out[pi]=a+'\n'+b; }
-      else { out[pi]=await callGeminiWithRetry(pg,target,'Page '+(pi+1)); }
-    }catch(e){
-      // Yahan ruk jao, lekin jo hua hai wo save rakho - agle Resume pe wahin se
-      ch.translatedPages = out;
-      try{ localStorage.setItem('pdf_trans_progress_'+ch.title, JSON.stringify(out)); }catch(_){}
-      throw new Error('Page '+(pi+1)+' pe ruka: '+e.message+' | ✅ '+pi+' pages save hain. Resume dabayen.');
+  // Kitne pages pehle se hue?
+  let firstTodo = 0; for(let i=0;i<out.length;i++){ if(out[i]&&out[i].trim()) firstTodo=i+1; else break; }
+  // BATCH: 5 page ek sath
+  for(let b=firstTodo; b<srcPages.length; b+=batchSize){
+    let batchEnd = Math.min(b+batchSize, srcPages.length);
+    let batchTexts=[];
+    for(let pi=b; pi<batchEnd; pi++){
+      let pg=cleanOCRText(stripInvisible(srcPages[pi]||''));
+      batchTexts.push(pg);
     }
-    ch.translatedPages = out; // har page ke baad save
+    // Agar batch me sab khali hain to skip
+    if(!batchTexts.join('').trim()){ for(let pi=b;pi<batchEnd;pi++) out[pi]=''; continue; }
+    // Batch ko ek text banao with clear markers
+    let combined = batchTexts.map((t,idx)=>'<<<PAGE '+(b+idx+1)+' START>>>\n'+t+'\n<<<PAGE '+(b+idx+1)+' END>>>').join('\n\n');
+    try{
+      let translatedCombined = await callGeminiWithRetry(combined, target, 'Pages '+(b+1)+'-'+batchEnd);
+      // Wapis alag karo
+      let parts = {};
+      let re = /<<<PAGE (\d+) START>>>\s*([\s\S]*?)\s*<<<PAGE \1 END>>>/g; let m;
+      while((m=re.exec(translatedCombined))!==null){ parts[parseInt(m[1])]=m[2].trim(); }
+      // Agar AI ne markers torh diye to poora batch pehle page me mat dalo, fallback: split by double newline approx
+      if(Object.keys(parts).length===0){
+        // Fallback: translate ko barabar baant do
+        let chunks = translatedCombined.split(/\n\n+/);
+        for(let pi=b; pi<batchEnd; pi++){ out[pi]=chunks[pi-b]||translatedCombined; }
+      } else {
+        for(let pi=b; pi<batchEnd; pi++){ out[pi]=parts[pi+1]||''; if(!out[pi].trim()) out[pi]=translatedCombined; }
+      }
+    }catch(e){
+      ch.translatedPages=out;
+      try{ localStorage.setItem('pdf_trans_progress_'+ch.title, JSON.stringify(out)); }catch(_){}
+      // QUOTA khatam ho to Google wale se baqi kaam jari rakho, rukna nahi
+      if(/quota|20 per day|exceeded|429/i.test(e.message)){
+        let gs=document.getElementById('geminiStatus'); if(gs) gs.innerHTML='⚠️ Gemini quota khatam (20/din). Baqi pages <b>Google Translate</b> se ho rahe hain taake kaam na ruke. Kal Gemini dobara chalega.';
+        for(let pi=b; pi<srcPages.length; pi++){
+          if(out[pi]&&out[pi].trim()) continue;
+          let pg=cleanOCRText(stripInvisible(srcPages[pi]||'')); if(!pg.trim()){out[pi]='';continue;}
+          try{ out[pi]=await translateChunk(pg, target); }catch(_){ out[pi]=pg; }
+          ch.translatedPages=out; if(cb) cb((pi+1)/srcPages.length*100);
+        }
+        break;
+      }
+      throw new Error('Pages '+(b+1)+'-'+batchEnd+' pe ruka: '+e.message+' | ✅ '+b+' pages save hain. Resume dabayen.');
+    }
+    ch.translatedPages=out;
     try{ localStorage.setItem('pdf_trans_progress_'+ch.title, JSON.stringify(out)); }catch(_){}
-    if(cb) cb((pi+1)/srcPages.length*100);
+    if(cb) cb(batchEnd/srcPages.length*100);
     await sleep(600);
   }
   return out;
