@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V32 Professional</title>
+<title>PDF Book Assembler PRO - V33 Perfect Urdu</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -37,7 +37,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold" data-i18n="appTitle">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V32 Pro — Dynamic Layout & Chapter Covers</p>
+<p class="text-xs opacity-90">V33 Perfect Urdu — No Broken Letters</p>
 </div>
 <div class="flex items-center gap-2">
 <label class="text-xs" data-i18n="langLabel">Language:</label>
@@ -46,7 +46,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <option value="ur">اردو</option>
 <option value="en">English</option>
 </select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V32 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V33 ✓</span>
 </div>
 </div>
 </header>
@@ -54,12 +54,11 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V32 — New Features:</b>
+<b>✅ PRO V33 — Urdu Font Fixed:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>Dynamic Font Size:</b> Text ka size bara (13.5pt / 15.5pt) kar diya gaya hai.</li>
-<li><b>Dynamic Line Gap:</b> Agar page par text kam ho toh lines ke darmiyan gap barh jayega.</li>
-<li><b>Chapter Covers:</b> Har Chapter ke samne Cover image lagane ka option.</li>
-<li><b>Centered Titles:</b> Chapter ka title page ke bilkul center mein hoga.</li>
+<li><b>Connected Letters:</b> Urdu ke haroof ab nahi tootenge. Font engine poore jumlay ko ek sath render karega.</li>
+<li><b>Smart Alignment:</b> Line ko justify karne ke liye smart space distribution use hoga taake words page se bahir na jayen.</li>
+<li><b>Bara Text & Gap:</b> Text ka size barha diya gaya hai (15.5pt) aur line gaps page ke hisaab se adjust honge.</li>
 </ul>
 </div>
 
@@ -229,7 +228,7 @@ function cleanOCRText(txt) {
   return out.join('\n\n');
 }
 
-// ============ V32 WORD-STYLE WRAPPING ============
+// ============ V33 WORD WRAPPING ============
 function measureWord(word, font, size) {
   try { return font.widthOfTextAtSize(word, size); } 
   catch(e) { return word.length * size * 0.5; }
@@ -260,73 +259,58 @@ function wrapTextPro(str, maxWidth, fontObj, size) {
   return lines;
 }
 
-// ============ V32 PERFECT JUSTIFICATION ============
+// ============ V33 PERFECT URDU + SMART JUSTIFY ============
 function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
   let txt = stripInvisible(lineText).trim();
   if (!txt) return;
   
-  let words = txt.split(/\s+/).filter(w => w.length > 0);
+  // V33 FIX: Poore line ko ek sath draw karo taake Urdu haroof na tootein
+  let naturalW = measureWord(txt, fontObj, size);
+  let extraSpace = targetWidth - naturalW;
   
-  if (words.length <= 1 || isLastLine) {
+  if (isLastLine || extraSpace <= 0 || extraSpace > 80) {
+    // Last line ya agar bohat zyada space bacha ho toh simple align karo
     if (isRTL) {
-      let curX = x + targetWidth;
-      for (let i = words.length - 1; i >= 0; i--) {
-        let wW = measureWord(words[i], fontObj, size);
-        curX -= wW;
-        if (curX < x) curX = x;
-        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-        curX -= measureSpace(fontObj, size);
-      }
+      safeDraw(pg, txt, { x: x + targetWidth - naturalW, y: y, size: size, font: fontObj });
     } else {
-      let curX = x + (isFirstLine ? 15 : 0);
-      for (let i = 0; i < words.length; i++) {
-        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-        curX += measureWord(words[i], fontObj, size) + measureSpace(fontObj, size);
-      }
-    }
-    return;
-  }
-  
-  let naturalW = 0;
-  for (let w of words) naturalW += measureWord(w, fontObj, size);
-  let spaceW = measureSpace(fontObj, size);
-  let gaps = words.length - 1;
-  let totalNatural = naturalW + (spaceW * gaps);
-  let extra = targetWidth - totalNatural;
-  let extraPerGap = extra / gaps;
-  
-  if (extraPerGap > 15 || extra < 0) {
-    if (isRTL) {
-      let curX = x + targetWidth;
-      for (let i = words.length - 1; i >= 0; i--) {
-        let wW = measureWord(words[i], fontObj, size);
-        curX -= wW;
-        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-        curX -= spaceW;
-      }
-    } else {
-      let curX = x + (isFirstLine ? 15 : 0);
-      for (let i = 0; i < words.length; i++) {
-        safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-        curX += measureWord(words[i], fontObj, size) + spaceW;
-      }
-    }
-    return;
-  }
-  
-  if (isRTL) {
-    let curX = x + targetWidth;
-    for (let i = words.length - 1; i >= 0; i--) {
-      let wW = measureWord(words[i], fontObj, size);
-      curX -= wW;
-      safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-      curX -= (spaceW + extraPerGap);
+      safeDraw(pg, txt, { x: x + (isFirstLine ? 15 : 0), y: y, size: size, font: fontObj });
     }
   } else {
-    let curX = x + (isFirstLine ? 15 : 0);
-    for (let i = 0; i < words.length; i++) {
-      safeDraw(pg, words[i], { x: curX, y, size, font: fontObj });
-      curX += measureWord(words[i], fontObj, size) + spaceW + extraPerGap;
+    // JUSTIFY: Word-by-word draw karo lekin proper spacing ke sath
+    let words = txt.split(/\s+/).filter(w => w.length > 0);
+    if (words.length <= 1) {
+      if (isRTL) safeDraw(pg, txt, { x: x + targetWidth - naturalW, y: y, size: size, font: fontObj });
+      else safeDraw(pg, txt, { x: x + (isFirstLine ? 15 : 0), y: y, size: size, font: fontObj });
+      return;
+    }
+    
+    let gaps = words.length - 1;
+    let wordsWidth = 0;
+    words.forEach(w => wordsWidth += measureWord(w, fontObj, size));
+    let extraPerGap = (targetWidth - wordsWidth) / gaps;
+    
+    // Check karo agar extra gap bohat zyada hai toh font chota kar do ya simple align karo
+    if (extraPerGap > 15) {
+      if (isRTL) safeDraw(pg, txt, { x: x + targetWidth - naturalW, y: y, size: size, font: fontObj });
+      else safeDraw(pg, txt, { x: x + (isFirstLine ? 15 : 0), y: y, size: size, font: fontObj });
+      return;
+    }
+    
+    // V33 FIX: Word-by-word draw with proper alignment
+    if (isRTL) {
+      let curX = x + targetWidth;
+      for (let i = words.length - 1; i >= 0; i--) {
+        let wW = measureWord(words[i], fontObj, size);
+        curX -= wW;
+        safeDraw(pg, words[i], { x: curX, y: y, size: size, font: fontObj });
+        curX -= extraPerGap;
+      }
+    } else {
+      let curX = x + (isFirstLine ? 15 : 0);
+      for (let i = 0; i < words.length; i++) {
+        safeDraw(pg, words[i], { x: curX, y: y, size: size, font: fontObj });
+        curX += measureWord(words[i], fontObj, size) + extraPerGap;
+      }
     }
   }
 }
@@ -506,7 +490,7 @@ async function runFullOCR(onlyIdx = null) {
   updateProgress('ocr', 100);
 }
 
-// ============ BOOK MAKING (V32 DYNAMIC GAP + FONT) ============
+// ============ BOOK MAKING (V33 DYNAMIC GAP + FONT) ============
 async function makeBook() {
   if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
@@ -547,7 +531,7 @@ async function makeBook() {
     for (let i = 0; i < chapters.length; i++) {
       let ch = chapters[i];
       
-      // V32: CHAPTER COVER
+      // V32/V33: CHAPTER COVER
       if (ch.coverData) {
         let cimg;
         try {
@@ -567,12 +551,11 @@ async function makeBook() {
         }
       }
       
-      // V32: CHAPTER TITLE (Centered)
+      // CHAPTER TITLE (Centered)
       let div = merged.addPage([595, 842]);
       let titleStr = 'CHAPTER ' + (i + 1);
       let subtitleStr = ch.title.slice(0, 40);
       
-      // Center alignment
       let titleW = measureWord(titleStr, bold, 24);
       let subW = measureWord(subtitleStr, bold, 18);
       
@@ -588,15 +571,13 @@ async function makeBook() {
           
           let curPg = merged.addPage([595, 842]);
           
-          // V32: DYNAMIC FONT SIZE & LINE GAP
           let useComplex = needsComplexFont(rawPage);
           let pageFont = (useComplex && urduFont) ? urduFont : font;
           let isRTL = useComplex;
           
-          // Bara font size
           let fSize = useComplex ? 15.5 : 13.5; 
-          let lineH = useComplex ? 32 : 26; // Base line height
-          let targetWidth = 495; // 595 - 50(left) - 50(right) = 495
+          let lineH = useComplex ? 32 : 26; 
+          let targetWidth = 495; 
           
           let paragraphs = rawPage.split(/\n+/);
           let allLines = [];
@@ -607,11 +588,9 @@ async function makeBook() {
             if (pLines.length > 0) allLines.push(...pLines);
           }
           
-          // V32: SMART LINE GAP ADJUSTMENT
-          let availableHeight = 750 - 50; // 750 top, 50 bottom
+          let availableHeight = 750 - 50; 
           let totalTextHeight = allLines.length * lineH;
           
-          // Agar text kam hai aur page mein jagah bachi hai, toh line gap barha do
           if (totalTextHeight < availableHeight && allLines.length > 1) {
              lineH = availableHeight / allLines.length;
           }
@@ -630,7 +609,6 @@ async function makeBook() {
             }
             
             let isLast = (li == allLines.length - 1);
-            // Adjust y position for vertical centering if needed
             drawJustifiedLine(curPg, line, 50, yy, fSize, pageFont, isLast, isFirstLine, targetWidth, isRTL);
             yy -= lineH;
           }
