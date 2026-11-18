@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V33 Perfect Urdu</title>
+<title>PDF Book Assembler PRO - V34 Smart Extract</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -37,7 +37,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold" data-i18n="appTitle">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V33 Perfect Urdu — No Broken Letters</p>
+<p class="text-xs opacity-90">V34 Smart Extract — No OCR Needed for Digital PDFs</p>
 </div>
 <div class="flex items-center gap-2">
 <label class="text-xs" data-i18n="langLabel">Language:</label>
@@ -46,7 +46,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <option value="ur">اردو</option>
 <option value="en">English</option>
 </select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V33 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V34 ✓</span>
 </div>
 </div>
 </header>
@@ -54,11 +54,11 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V33 — Urdu Font Fixed:</b>
+<b>✅ PRO V34 — Smart Text Extraction:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>Connected Letters:</b> Urdu ke haroof ab nahi tootenge. Font engine poore jumlay ko ek sath render karega.</li>
-<li><b>Smart Alignment:</b> Line ko justify karne ke liye smart space distribution use hoga taake words page se bahir na jayen.</li>
-<li><b>Bara Text & Gap:</b> Text ka size barha diya gaya hai (15.5pt) aur line gaps page ke hisaab se adjust honge.</li>
+<li><b>Auto-Detect:</b> Agar PDF mein text pehle se hai (Digital PDF), toh bina OCR ke foran text nikal lega. OCR sirf Scanned/Image PDFs par chalega.</li>
+<li><b>Super Fast:</b> Digital PDFs ke liye process ab 10x tez ho jayega kyunke OCR skip ho jayega.</li>
+<li><b>Perfect Urdu:</b> Urdu haroof jude hue aayenge, toote nahi hain.</li>
 </ul>
 </div>
 
@@ -91,13 +91,13 @@ body{font-family:Inter,system-ui,sans-serif}
 
 <div class="grid md:grid-cols-2 gap-4">
 <div class="card">
-<h2 class="font-bold" data-i18n="step2">2️⃣ FULL OCR</h2>
-<button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2" data-i18n="ocrBtn">🔍 OCR Karo</button>
+<h2 class="font-bold" data-i18n="step2">2️⃣ Extract Text</h2>
+<button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2" data-i18n="ocrBtn">⚡ Smart Extract / OCR</button>
 <div class="mt-2">
   <div class="progress-container"><div id="ocrProgressBar" class="progress-bar"></div></div>
   <div id="ocrProgressText" class="progress-text">0%</div>
 </div>
-<div id="ocrStatus" class="text-sm mt-1 bg-slate-50 p-2 rounded">Abhi OCR nahi hua.</div>
+<div id="ocrStatus" class="text-sm mt-1 bg-slate-50 p-2 rounded">Abhi text extract nahi hua.</div>
 <textarea id="ocrText" class="flexBox w-full border p-2 rounded h-40 mt-1"></textarea>
 </div>
 
@@ -148,18 +148,18 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 const UI_LANGS = {
   roman: {
     appTitle: '📚 PDF Book Assembler PRO', langLabel: 'Language:', settings: 'Settings:', ocrLang: 'OCR Language:', ocrQuality: 'OCR Quality:',
-    step1: '1️⃣ Chapters Add Karein', step2: '2️⃣ FULL OCR', step3: '3️⃣ Book Banao', previewTitle: 'Translation Preview',
-    sortBtn: '🔤 Sort', clearBtn: '🗑️ Clear', resetBtn: '🔄 Reset', ocrBtn: '🔍 OCR Karo', makeBookBtn: '📖 Book Banao', transBtn: 'Translate Karo'
+    step1: '1️⃣ Chapters Add Karein', step2: '2️⃣ Extract Text', step3: '3️⃣ Book Banao', previewTitle: 'Translation Preview',
+    sortBtn: '🔤 Sort', clearBtn: '🗑️ Clear', resetBtn: '🔄 Reset', ocrBtn: '⚡ Smart Extract / OCR', makeBookBtn: '📖 Book Banao', transBtn: 'Translate Karo'
   },
   ur: {
     appTitle: '📚 پی ڈی ایف بک اسمبلر پرو', langLabel: 'زبان:', settings: 'سیٹنگز:', ocrLang: 'او سی آر زبان:', ocrQuality: 'او سی آر کوالٹی:',
-    step1: '1️⃣ ابواب شامل کریں', step2: '2️⃣ مکمل او سی آر', step3: '3️⃣ کتاب بنائیں', previewTitle: 'ترجمہ پریویو',
-    sortBtn: '🔤 ترتیب', clearBtn: '🗑️ صاف کریں', resetBtn: '🔄 ری سیٹ', ocrBtn: '🔍 او سی آر کریں', makeBookBtn: '📖 کتاب بنائیں', transBtn: 'ترجمہ کریں'
+    step1: '1️⃣ ابواب شامل کریں', step2: '2️⃣ ٹیکسٹ نکالیں', step3: '3️⃣ کتاب بنائیں', previewTitle: 'ترجمہ پریویو',
+    sortBtn: '🔤 ترتیب', clearBtn: '🗑️ صاف کریں', resetBtn: '🔄 ری سیٹ', ocrBtn: '⚡ سمارٹ نکالیں / OCR', makeBookBtn: '📖 کتاب بنائیں', transBtn: 'ترجمہ کریں'
   },
   en: {
     appTitle: '📚 PDF Book Assembler PRO', langLabel: 'Language:', settings: 'Settings:', ocrLang: 'OCR Language:', ocrQuality: 'OCR Quality:',
-    step1: '1️⃣ Add Chapters', step2: '2️⃣ FULL OCR', step3: '3️⃣ Make Book', previewTitle: 'Translation Preview',
-    sortBtn: '🔤 Sort', clearBtn: '🗑️ Clear', resetBtn: '🔄 Reset', ocrBtn: '🔍 Run OCR', makeBookBtn: '📖 Make Book', transBtn: 'Translate'
+    step1: '1️⃣ Add Chapters', step2: '2️⃣ Extract Text', step3: '3️⃣ Make Book', previewTitle: 'Translation Preview',
+    sortBtn: '🔤 Sort', clearBtn: '🗑️ Clear', resetBtn: '🔄 Reset', ocrBtn: '⚡ Smart Extract / OCR', makeBookBtn: '📖 Make Book', transBtn: 'Translate'
   }
 };
 
@@ -264,19 +264,16 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
   let txt = stripInvisible(lineText).trim();
   if (!txt) return;
   
-  // V33 FIX: Poore line ko ek sath draw karo taake Urdu haroof na tootein
   let naturalW = measureWord(txt, fontObj, size);
   let extraSpace = targetWidth - naturalW;
   
   if (isLastLine || extraSpace <= 0 || extraSpace > 80) {
-    // Last line ya agar bohat zyada space bacha ho toh simple align karo
     if (isRTL) {
       safeDraw(pg, txt, { x: x + targetWidth - naturalW, y: y, size: size, font: fontObj });
     } else {
       safeDraw(pg, txt, { x: x + (isFirstLine ? 15 : 0), y: y, size: size, font: fontObj });
     }
   } else {
-    // JUSTIFY: Word-by-word draw karo lekin proper spacing ke sath
     let words = txt.split(/\s+/).filter(w => w.length > 0);
     if (words.length <= 1) {
       if (isRTL) safeDraw(pg, txt, { x: x + targetWidth - naturalW, y: y, size: size, font: fontObj });
@@ -289,14 +286,12 @@ function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirs
     words.forEach(w => wordsWidth += measureWord(w, fontObj, size));
     let extraPerGap = (targetWidth - wordsWidth) / gaps;
     
-    // Check karo agar extra gap bohat zyada hai toh font chota kar do ya simple align karo
     if (extraPerGap > 15) {
       if (isRTL) safeDraw(pg, txt, { x: x + targetWidth - naturalW, y: y, size: size, font: fontObj });
       else safeDraw(pg, txt, { x: x + (isFirstLine ? 15 : 0), y: y, size: size, font: fontObj });
       return;
     }
     
-    // V33 FIX: Word-by-word draw with proper alignment
     if (isRTL) {
       let curX = x + targetWidth;
       for (let i = words.length - 1; i >= 0; i--) {
@@ -387,7 +382,7 @@ async function translatePageWise(ch, target, progressCb) {
   return outPages;
 }
 
-// ============ TURBO OCR ============
+// ============ V34 SMART OCR / TEXT EXTRACT ============
 async function getTesseractWorker() {
   if (_tesseractWorker) return _tesseractWorker;
   let lang = document.getElementById('ocrLang').value;
@@ -397,12 +392,13 @@ async function getTesseractWorker() {
   return _tesseractWorker;
 }
 
-async function getChapterText(ch, useOCR, onPage) {
+async function getChapterText(ch, onPage) {
   let buf = await ch.file.arrayBuffer();
   let pdf = await pdfjsLib.getDocument({ data: buf }).promise;
   let pagesText = [];
   let scale = parseFloat(document.getElementById('ocrQuality').value);
-  let worker = useOCR ? await getTesseractWorker() : null;
+  let worker = null;
+  let isScanned = false;
 
   for (let p = 1; p <= pdf.numPages; p++) {
     if (_cancel) break;
@@ -410,15 +406,23 @@ async function getChapterText(ch, useOCR, onPage) {
     if (onPage) onPage(p, pdf.numPages);
     let pageTxt = '';
     
-    if (!useOCR) {
-      try {
-        let tc = await page.getTextContent();
-        let t = tc.items.map(x => x.str).join(' ');
-        if (t.trim().length > 30) pageTxt = stripInvisible(t);
-      } catch(e) {}
-    }
+    // 1. Pehle try karo ke direct text mile (Digital PDF)
+    try {
+      let tc = await page.getTextContent();
+      let t = tc.items.map(x => x.str).join(' ');
+      if (t.trim().length > 50) {
+        pageTxt = stripInvisible(t); // Direct text mil gaya!
+      }
+    } catch(e) {}
     
+    // 2. Agar text nahi mila (Scanned Image PDF), toh OCR chalao
     if (!pageTxt) {
+      if (!worker) {
+        document.getElementById('ocrStatus').textContent = 'PDF scanned lag rahi hai, OCR load ho raha hai...';
+        worker = await getTesseractWorker();
+      }
+      isScanned = true;
+      
       let vp = page.getViewport({ scale: scale });
       let c = document.createElement('canvas');
       c.width = vp.width; c.height = vp.height;
@@ -441,6 +445,13 @@ async function getChapterText(ch, useOCR, onPage) {
     
     pagesText.push(pageTxt);
     await new Promise(r => setTimeout(r, 10));
+  }
+  
+  // Status Update
+  if (isScanned) {
+    document.getElementById('ocrStatus').innerHTML = '✅ Scanned PDF thi, OCR mukammal!';
+  } else {
+    document.getElementById('ocrStatus').innerHTML = '⚡ Digital PDF thi, foran text extract ho gaya (OCR skip)!';
   }
   
   pagesText = stripHeaderFooter(pagesText);
@@ -472,7 +483,7 @@ async function runFullOCR(onlyIdx = null) {
   for (let idx of indices) {
     if (_cancel) break;
     let ch = chapters[idx];
-    ch.text = await getChapterText(ch, true, (p, tot) => {
+    ch.text = await getChapterText(ch, (p, tot) => {
       document.getElementById('ocrStatus').textContent = 'Chapter ' + (idx + 1) + ' — Page ' + p + '/' + tot;
       let currentPercent = ((donePages + p) / totalPages) * 100;
       updateProgress('ocr', currentPercent);
@@ -490,7 +501,7 @@ async function runFullOCR(onlyIdx = null) {
   updateProgress('ocr', 100);
 }
 
-// ============ BOOK MAKING (V33 DYNAMIC GAP + FONT) ============
+// ============ BOOK MAKING ============
 async function makeBook() {
   if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
@@ -505,7 +516,6 @@ async function makeBook() {
     let totalTasks = chapters.length * 2;
     let completedTasks = 0;
 
-    // Translation Phase
     if (target != 'original') {
       for (let i = 0; i < chapters.length; i++) {
         if (chapters[i].pagesText && chapters[i].pagesText.length) {
@@ -517,21 +527,17 @@ async function makeBook() {
       }
     }
     
-    // PDF Generation Phase
     const merged = await PDFLib.PDFDocument.create();
     const font = await merged.embedFont(PDFLib.StandardFonts.Helvetica);
     const urduFont = await loadUrduFont(merged);
     const bold = await merged.embedFont(PDFLib.StandardFonts.HelveticaBold);
     
-    // COVER PAGE
     let cover = merged.addPage([595, 842]);
     safeDraw(cover, bookName.slice(0, 40), { x: 50, y: 650, size: 30, font: bold });
     
-    // CHAPTER PAGES
     for (let i = 0; i < chapters.length; i++) {
       let ch = chapters[i];
       
-      // V32/V33: CHAPTER COVER
       if (ch.coverData) {
         let cimg;
         try {
@@ -551,7 +557,6 @@ async function makeBook() {
         }
       }
       
-      // CHAPTER TITLE (Centered)
       let div = merged.addPage([595, 842]);
       let titleStr = 'CHAPTER ' + (i + 1);
       let subtitleStr = ch.title.slice(0, 40);
@@ -712,7 +717,7 @@ function renderChapters() {
           🖼️ Cover
           <input type="file" accept="image/*" class="hidden" onchange="onChapterCoverChange(${i}, event)">
         </label>
-        <button onclick="runFullOCR(${i})" class="bg-amber-500 text-white px-3 py-1 rounded text-xs font-bold">OCR</button>
+        <button onclick="runFullOCR(${i})" class="bg-amber-500 text-white px-3 py-1 rounded text-xs font-bold">Extract/OCR</button>
       </div>`;
     list.appendChild(div);
   });
