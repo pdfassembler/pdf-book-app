@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V34 Smart Extract</title>
+<title>PDF Book Assembler PRO - V35 Fix Font & Hang</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -37,7 +37,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
 <div>
 <h1 class="text-xl font-extrabold" data-i18n="appTitle">📚 PDF Book Assembler PRO</h1>
-<p class="text-xs opacity-90">V34 Smart Extract — No OCR Needed for Digital PDFs</p>
+<p class="text-xs opacity-90">V35 Fix Font Embed & No Hang</p>
 </div>
 <div class="flex items-center gap-2">
 <label class="text-xs" data-i18n="langLabel">Language:</label>
@@ -46,7 +46,7 @@ body{font-family:Inter,system-ui,sans-serif}
 <option value="ur">اردو</option>
 <option value="en">English</option>
 </select>
-<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V34 ✓</span>
+<span class="text-xs bg-white/20 px-3 py-1 rounded-full">PRO V35 ✓</span>
 </div>
 </div>
 </header>
@@ -54,11 +54,11 @@ body{font-family:Inter,system-ui,sans-serif}
 <main dir="ltr" class="max-w-7xl mx-auto p-4 space-y-4">
 
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm">
-<b>✅ PRO V34 — Smart Text Extraction:</b>
+<b>✅ PRO V35 — PDF Symbols & Hang Fix:</b>
 <ul class="list-disc ml-5 mt-1 space-y-1">
-<li><b>Auto-Detect:</b> Agar PDF mein text pehle se hai (Digital PDF), toh bina OCR ke foran text nikal lega. OCR sirf Scanned/Image PDFs par chalega.</li>
-<li><b>Super Fast:</b> Digital PDFs ke liye process ab 10x tez ho jayega kyunke OCR skip ho jayega.</li>
-<li><b>Perfect Urdu:</b> Urdu haroof jude hue aayenge, toote nahi hain.</li>
+<li><b>Font Fix:</b> Urdu font ab lazmi embed hoga. Khali pages / symbols khatam.</li>
+<li><b>No More Hang:</b> PDF banate waqt browser ab "Not Responding" nahi hoga.</li>
+<li><b>Bara Text & Gap:</b> Pichli saari khoobiyan (15.5pt font, auto gap) barqarar hain.</li>
 </ul>
 </div>
 
@@ -228,7 +228,7 @@ function cleanOCRText(txt) {
   return out.join('\n\n');
 }
 
-// ============ V33 WORD WRAPPING ============
+// ============ WORD WRAPPING ============
 function measureWord(word, font, size) {
   try { return font.widthOfTextAtSize(word, size); } 
   catch(e) { return word.length * size * 0.5; }
@@ -259,7 +259,7 @@ function wrapTextPro(str, maxWidth, fontObj, size) {
   return lines;
 }
 
-// ============ V33 PERFECT URDU + SMART JUSTIFY ============
+// ============ PERFECT URDU + SMART JUSTIFY ============
 function drawJustifiedLine(pg, lineText, x, y, size, fontObj, isLastLine, isFirstLine, targetWidth, isRTL) {
   let txt = stripInvisible(lineText).trim();
   if (!txt) return;
@@ -315,25 +315,43 @@ function safeDraw(page, txt, opts) {
   catch(e) { try { page.drawText(stripInvisible(txt).slice(0, 100), opts); } catch(e2) {} }
 }
 
-// ============ FONTS ============
+// ============ ROBUST FONT LOADING ============
+let _fontLoadingPromise = null;
 async function loadUrduFont(doc) {
   if (_urduFont) return _urduFont;
-  try {
-    if (window.fontkit) doc.registerFontkit(window.fontkit);
-    let urls = [
-      'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notonastaliqurdu/NotoNastaliqUrdu%5Bwght%5D.ttf',
-      'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/amiri/Amiri-Regular.ttf'
-    ];
-    for (let u of urls) {
-      try {
-        let r = await fetch(u); if (!r.ok) continue;
-        let b = await r.arrayBuffer();
-        _urduFont = await doc.embedFont(b);
-        return _urduFont;
-      } catch(e) {}
-    }
-  } catch(e) {}
-  return null;
+  if (_fontLoadingPromise) return await _fontLoadingPromise;
+
+  _fontLoadingPromise = (async () => {
+    try {
+      if (window.fontkit) doc.registerFontkit(window.fontkit);
+      
+      // Try multiple reliable sources for Noto Nastaliq Urdu
+      let urls = [
+        'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notonastaliqurdu/NotoNastaliqUrdu%5Bwght%5D.ttf',
+        'https://cdn.jsdelivr.net/npm/@fontsource/noto-nastaliq-urdu/files/noto-nastaliq-urdu-arabic-400-normal.woff',
+        'https://fonts.gstatic.com/s/notonastaliqurdu/v20/LhW4a3d1eOH0s_ZtqS0Z06w.ttf'
+      ];
+      
+      for (let u of urls) {
+        try {
+          let r = await fetch(u);
+          if (!r.ok) continue;
+          let b = await r.arrayBuffer();
+          
+          // Basic validation: check file size (fonts are > 100KB)
+          if (b.byteLength < 50000) continue; 
+          
+          _urduFont = await doc.embedFont(b);
+          return _urduFont;
+        } catch(e) { console.warn('Font source failed:', u, e); }
+      }
+    } catch(e) { console.error('Fontkit register failed:', e); }
+    return null;
+  })();
+
+  let res = await _fontLoadingPromise;
+  _fontLoadingPromise = null;
+  return res;
 }
 
 // ============ TRANSLATION ============
@@ -382,7 +400,7 @@ async function translatePageWise(ch, target, progressCb) {
   return outPages;
 }
 
-// ============ V34 SMART OCR / TEXT EXTRACT ============
+// ============ SMART OCR ============
 async function getTesseractWorker() {
   if (_tesseractWorker) return _tesseractWorker;
   let lang = document.getElementById('ocrLang').value;
@@ -406,16 +424,12 @@ async function getChapterText(ch, onPage) {
     if (onPage) onPage(p, pdf.numPages);
     let pageTxt = '';
     
-    // 1. Pehle try karo ke direct text mile (Digital PDF)
     try {
       let tc = await page.getTextContent();
       let t = tc.items.map(x => x.str).join(' ');
-      if (t.trim().length > 50) {
-        pageTxt = stripInvisible(t); // Direct text mil gaya!
-      }
+      if (t.trim().length > 50) pageTxt = stripInvisible(t);
     } catch(e) {}
     
-    // 2. Agar text nahi mila (Scanned Image PDF), toh OCR chalao
     if (!pageTxt) {
       if (!worker) {
         document.getElementById('ocrStatus').textContent = 'PDF scanned lag rahi hai, OCR load ho raha hai...';
@@ -447,12 +461,8 @@ async function getChapterText(ch, onPage) {
     await new Promise(r => setTimeout(r, 10));
   }
   
-  // Status Update
-  if (isScanned) {
-    document.getElementById('ocrStatus').innerHTML = '✅ Scanned PDF thi, OCR mukammal!';
-  } else {
-    document.getElementById('ocrStatus').innerHTML = '⚡ Digital PDF thi, foran text extract ho gaya (OCR skip)!';
-  }
+  if (isScanned) document.getElementById('ocrStatus').innerHTML = '✅ Scanned PDF thi, OCR mukammal!';
+  else document.getElementById('ocrStatus').innerHTML = '⚡ Digital PDF thi, foran text extract ho gaya (OCR skip)!';
   
   pagesText = stripHeaderFooter(pagesText);
   ch.pagesText = pagesText;
@@ -501,7 +511,7 @@ async function runFullOCR(onlyIdx = null) {
   updateProgress('ocr', 100);
 }
 
-// ============ BOOK MAKING ============
+// ============ BOOK MAKING (V35 NO HANG) ============
 async function makeBook() {
   if (!chapters.length) return alert('Chapters add karein');
   let target = document.getElementById('targetLang').value;
@@ -538,6 +548,7 @@ async function makeBook() {
     for (let i = 0; i < chapters.length; i++) {
       let ch = chapters[i];
       
+      // Chapter cover image if available
       if (ch.coverData) {
         let cimg;
         try {
@@ -617,6 +628,9 @@ async function makeBook() {
             drawJustifiedLine(curPg, line, 50, yy, fSize, pageFont, isLast, isFirstLine, targetWidth, isRTL);
             yy -= lineH;
           }
+          
+          // V35: YIELD TO UI to prevent hang
+          await new Promise(r => setTimeout(r, 1));
         }
       }
       
@@ -629,6 +643,9 @@ async function makeBook() {
       
       completedTasks++;
       updateProgress('book', (completedTasks / totalTasks) * 100);
+      
+      // V35: YIELD after each chapter
+      await new Promise(r => setTimeout(r, 10));
     }
     
     const bytes = await merged.save();
