@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ur"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V52</title>
+<title>PDF Book Assembler PRO - V54</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 <style>body{font-family:Inter,system-ui}.card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:16px}.chapterRow{border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#f8fafc}.chapterRow.done{border-color:#22c55e;background:#f0fdf4}.chapNum{width:44px;height:44px;min-width:44px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#a855f7);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}#fileList{max-height:640px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.flexBox{resize:vertical;overflow:auto;min-height:160px;height:160px}.rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu',serif}.ltr-text{direction:ltr;text-align:left}.progress-container{width:100%;background:#e2e8f0;border-radius:9999px;height:10px;overflow:hidden;margin-top:8px}.progress-bar{height:100%;background:#4f46e5;width:0%}.progress-text{font-size:12px;color:#64748b;margin-top:4px;text-align:right;font-weight:bold}.owner-only{ display:none !important; } #publicNotice{background:#ecfdf5;border:1px solid #a7f3d0;padding:10px;border-radius:10px;font-size:13px;margin:10px 0} </style></head>
 <body class="bg-slate-100 min-h-screen">
-<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10"><div class="max-w-6xl mx-auto flex justify-between items-center"><div><h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1><p class="text-xs opacity-90">V52 — Urdu ab Image se banega, symbols nahi aayenge</p></div><select id="proLang" data-ui-lang="1" data-ui-lang="1" onchange="setUiLang(this.value)" class="text-black text-xs rounded px-2 py-1"><option value="ur">Urdu - اردو</option><option value="en">English</option><option value="roman">Roman Urdu</option><option value="ar">Arabic - العربية</option><option value="hi">Hindi - हिन्दी</option><option value="bn">Bengali - বাংলা</option><option value="pa">Punjabi</option><option value="ps">Pashto</option><option value="sd">Sindhi</option><option value="fa">Persian - فارسی</option><option value="tr">Turkish</option><option value="fr">French</option><option value="de">German</option><option value="es">Spanish</option><option value="it">Italian</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="zh">Chinese</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="th">Thai</option><option value="vi">Vietnamese</option><option value="nl">Dutch</option><option value="sv">Swedish</option><option value="sw">Swahili</option><option value="ne">Nepali</option><option value="ta">Tamil</option><option value="te">Telugu</option></select></div></header>
+<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10"><div class="max-w-6xl mx-auto flex justify-between items-center"><div><h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1><p class="text-xs opacity-90">V54 — Urdu ab Image se banega, symbols nahi aayenge</p></div><select id="proLang" data-ui-lang="1" data-ui-lang="1" onchange="setUiLang(this.value)" class="text-black text-xs rounded px-2 py-1"><option value="ur">Urdu - اردو</option><option value="en">English</option><option value="roman">Roman Urdu</option><option value="ar">Arabic - العربية</option><option value="hi">Hindi - हिन्दी</option><option value="bn">Bengali - বাংলা</option><option value="pa">Punjabi</option><option value="ps">Pashto</option><option value="sd">Sindhi</option><option value="fa">Persian - فارسی</option><option value="tr">Turkish</option><option value="fr">French</option><option value="de">German</option><option value="es">Spanish</option><option value="it">Italian</option><option value="pt">Portuguese</option><option value="ru">Russian</option><option value="zh">Chinese</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="id">Indonesian</option><option value="ms">Malay</option><option value="th">Thai</option><option value="vi">Vietnamese</option><option value="nl">Dutch</option><option value="sv">Swedish</option><option value="sw">Swahili</option><option value="ne">Nepali</option><option value="ta">Tamil</option><option value="te">Telugu</option></select></div></header>
 <main class="max-w-7xl mx-auto p-4 space-y-4">
 <div class="bg-white rounded-xl p-3 border flex flex-wrap gap-3 items-center text-sm"><b>Settings:</b><label>OCR Language:</label><select id="ocrLang" class="border rounded px-2 py-1"><option value="urd">Urdu Only</option><option value="eng">English Only</option><option value="urd+eng">Urdu + English</option></select><label>OCR Quality:</label><select id="ocrQuality" class="border rounded px-2 py-1"><option value="2">High - 2.0</option><option value="1.5" selected>Medium - 1.5</option><option value="1.2">Fast - 1.2</option></select></div>
 
@@ -62,12 +62,19 @@ PERFECT BOOK RULE: Ghalti se paak, paak-saaf, parhne me maza aane wali kitab ban
 </div>
 <div class="card"><h2 class="font-bold">1⃣ Chapters Add Karein</h2><input id="pdfInput" type="file" accept="application/pdf" multiple class="w-full border p-2 rounded mt-2"><div class="flex gap-2 mt-2 text-xs"><button onclick="sortByName()" class="bg-slate-200 px-3 py-1 rounded font-bold">🔤 Sort</button><button onclick="clearAll()" class="bg-red-100 px-3 py-1 rounded font-bold">🗑 Clear</button><button onclick="resetHang()" class="bg-red-500 text-white px-3 py-1 rounded font-bold">🔄 Reset</button></div><div id="fileList" class="mt-3"></div></div>
 <div class="grid md:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold">2⃣ Extract Text</h2><button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2">⚡ Smart Extract / OCR</button><div class="mt-2"><div class="progress-container"><div id="ocrProgressBar" class="progress-bar"></div></div><div id="ocrProgressText" class="progress-text">0%</div></div><div id="ocrStatus" class="text-sm mt-1 bg-slate-50 p-2 rounded">Abhi text extract nahi hua.</div><textarea id="ocrText" class="flexBox w-full border p-2 rounded mt-1"></textarea></div>
-<div class="card"><h2 class="font-bold">3⃣ Book Banao</h2><input id="bookName" value="Meri Book" class="w-full border p-2 rounded mb-2"><select id="targetLang" class="border rounded px-2 py-1 max-w-[220px]"><option value="ur">Urdu - اردو</option><option value="en">English</option><option value="roman">Roman Urdu</option><option value="ar">Arabic - العربية</option><option value="hi">Hindi - हिन्दी</option><option value="bn">Bengali - বাংলা</option><option value="pa">Punjabi - ਪੰਜਾਬੀ</option><option value="ps">Pashto - پښتو</option><option value="sd">Sindhi - سنڌي</option><option value="fa">Persian - فارسی</option><option value="tr">Turkish - Türkçe</option><option value="fr">French - Français</option><option value="de">German - Deutsch</option><option value="es">Spanish - Español</option><option value="it">Italian - Italiano</option><option value="pt">Portuguese - Português</option><option value="ru">Russian - Русский</option><option value="zh">Chinese - 中文</option><option value="ja">Japanese - 日本語</option><option value="ko">Korean - 한국어</option><option value="id">Indonesian - Bahasa Indonesia</option><option value="ms">Malay - Bahasa Melayu</option><option value="th">Thai - ไทย</option><option value="vi">Vietnamese - Tiếng Việt</option><option value="nl">Dutch - Nederlands</option><option value="sv">Swedish - Svenska</option><option value="no">Norwegian - Norsk</option><option value="da">Danish - Dansk</option><option value="fi">Finnish - Suomi</option><option value="pl">Polish - Polski</option><option value="uk">Ukrainian - Українська</option><option value="el">Greek - Ελληνικά</option><option value="he">Hebrew - עברית</option><option value="sw">Swahili - Kiswahili</option><option value="am">Amharic - አማርኛ</option><option value="ne">Nepali - नेपाली</option><option value="mr">Marathi - मराठी</option><option value="ta">Tamil - தமிழ்</option><option value="te">Telugu - తెలుగు</option><option value="kn">Kannada - ಕನ್ನಡ</option><option value="ml">Malayalam - മലയാളം</option><option value="gu">Gujarati - ગુજરાતી</option><option value="or">Odia - ଓଡ଼ିଆ</option><option value="my">Burmese - မြန်မာ</option><option value="km">Khmer - ខ្មែរ</option><option value="lo">Lao - ລາວ</option><option value="so">Somali - Soomaali</option><option value="ha">Hausa</option><option value="yo">Yoruba</option><option value="ig">Igbo</option><option value="af">Afrikaans</option><option value="az">Azerbaijani</option><option value="uz">Uzbek - O'zbek</option><option value="kk">Kazakh - Қазақша</option><option value="ky">Kyrgyz - Кыргызча</option><option value="tg">Tajik - Тоҷикӣ</option><option value="tk">Turkmen - Türkmen</option><option value="mn">Mongolian - Монгол</option><option value="bo">Tibetan - བོད་སྐད</option><option value="si">Sinhala - සිංහල</option><option value="ceb">Cebuano</option><option value="tl">Filipino - Tagalog</option><option value="haw">Hawaiian</option><option value="mi">Maori</option><option value="cy">Welsh - Cymraeg</option><option value="ga">Irish - Gaeilge</option><option value="eu">Basque - Euskara</option><option value="ca">Catalan - Català</option><option value="gl">Galician - Galego</option><option value="cs">Czech - Čeština</option><option value="sk">Slovak - Slovenčina</option><option value="sl">Slovenian - Slovenščina</option><option value="hr">Croatian - Hrvatski</option><option value="sr">Serbian - Српски</option><option value="bs">Bosnian - Bosanski</option><option value="mk">Macedonian - Македонски</option><option value="bg">Bulgarian - Български</option><option value="ro">Romanian - Română</option><option value="hu">Hungarian - Magyar</option><option value="et">Estonian - Eesti</option><option value="lv">Latvian - Latviešu</option><option value="lt">Lithuanian - Lietuvių</option><option value="is">Icelandic - Íslenska</option><option value="sq">Albanian - Shqip</option><option value="hy">Armenian - Հայերեն</option><option value="ka">Georgian - ქართული</option><option value="kur">Kurdish - Kurdî</option></select><select id="bookMode" class="w-full border p-2 rounded mb-3"><option value="both">Original + Translated</option><option value="translated">Only Translated</option><option value="original">Only Original</option></select><button onclick="makeBook()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">📖 Book Banao</button><div class="mt-2"><div class="progress-container"><div id="bookProgressBar" class="progress-bar"></div></div><div id="bookProgressText" class="progress-text">0%</div></div><div id="status" class="text-sm mt-1 bg-slate-50 p-2 rounded">Ready hai.</div><div id="downloadArea"></div></div></div>
-<div class="card !border-2 !border-emerald-300"><h2 class="font-bold"><div class="flex gap-2 items-center bg-white border rounded-xl p-2 text-sm my-2"><button onclick="clearAllHistory()" class="bg-red-600 text-white px-4 py-2 rounded font-bold">🧹 History Remove - Nayi Kitab</button><label class="text-xs"><input type="checkbox" id="autoClearChk" checked> Download ke baad khud saaf kar do</label><span id="langStatus" class="text-xs font-bold text-emerald-600"></span></div>Translation Preview </h2><div class="flex gap-2 mt-2 text-xs items-center"><button onclick="translatePreview()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold">Translate Karo (Google)</button><button onclick="translateWithGemini()" class="bg-violet-600 text-white px-3 py-1.5 rounded-full font-bold">🤖 AI se Translate Karo (Gemini)</button><span>Page: <button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-1 rounded font-bold">◀</button> <span id="previewPageLabel">1 / 1</span> <button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-1 rounded font-bold">▶</button></span><span id="previewCount" class="text-slate-500"></span></div><div class="mt-2"><div class="progress-container"><div id="transProgressBar" class="progress-bar bg-emerald-500"></div></div><div id="transProgressText" class="progress-text">0%</div></div><div id="translatedBookView" class="flexBox w-full border p-3 rounded mt-2 bg-white text-[15px] leading-7 whitespace-pre-wrap" style="font-family:Georgia,serif"></div></div>
+<div class="card"><h2 class="font-bold">3⃣ Book Banao</h2><input id="bookName" value="Meri Book" class="w-full border p-2 rounded mb-2"><select id="targetLang" title="Sirf Kitab ki zubaan - Website ki zubaan se alag hai" class="border rounded px-2 py-1 max-w-[220px]"><option value="ur">Urdu - اردو</option><option value="en">English</option><option value="roman">Roman Urdu</option><option value="ar">Arabic - العربية</option><option value="hi">Hindi - हिन्दी</option><option value="bn">Bengali - বাংলা</option><option value="pa">Punjabi - ਪੰਜਾਬੀ</option><option value="ps">Pashto - پښتو</option><option value="sd">Sindhi - سنڌي</option><option value="fa">Persian - فارسی</option><option value="tr">Turkish - Türkçe</option><option value="fr">French - Français</option><option value="de">German - Deutsch</option><option value="es">Spanish - Español</option><option value="it">Italian - Italiano</option><option value="pt">Portuguese - Português</option><option value="ru">Russian - Русский</option><option value="zh">Chinese - 中文</option><option value="ja">Japanese - 日本語</option><option value="ko">Korean - 한국어</option><option value="id">Indonesian - Bahasa Indonesia</option><option value="ms">Malay - Bahasa Melayu</option><option value="th">Thai - ไทย</option><option value="vi">Vietnamese - Tiếng Việt</option><option value="nl">Dutch - Nederlands</option><option value="sv">Swedish - Svenska</option><option value="no">Norwegian - Norsk</option><option value="da">Danish - Dansk</option><option value="fi">Finnish - Suomi</option><option value="pl">Polish - Polski</option><option value="uk">Ukrainian - Українська</option><option value="el">Greek - Ελληνικά</option><option value="he">Hebrew - עברית</option><option value="sw">Swahili - Kiswahili</option><option value="am">Amharic - አማርኛ</option><option value="ne">Nepali - नेपाली</option><option value="mr">Marathi - मराठी</option><option value="ta">Tamil - தமிழ்</option><option value="te">Telugu - తెలుగు</option><option value="kn">Kannada - ಕನ್ನಡ</option><option value="ml">Malayalam - മലയാളം</option><option value="gu">Gujarati - ગુજરાતી</option><option value="or">Odia - ଓଡ଼ିଆ</option><option value="my">Burmese - မြန်မာ</option><option value="km">Khmer - ខ្មែរ</option><option value="lo">Lao - ລາວ</option><option value="so">Somali - Soomaali</option><option value="ha">Hausa</option><option value="yo">Yoruba</option><option value="ig">Igbo</option><option value="af">Afrikaans</option><option value="az">Azerbaijani</option><option value="uz">Uzbek - O'zbek</option><option value="kk">Kazakh - Қазақша</option><option value="ky">Kyrgyz - Кыргызча</option><option value="tg">Tajik - Тоҷикӣ</option><option value="tk">Turkmen - Türkmen</option><option value="mn">Mongolian - Монгол</option><option value="bo">Tibetan - བོད་སྐད</option><option value="si">Sinhala - සිංහල</option><option value="ceb">Cebuano</option><option value="tl">Filipino - Tagalog</option><option value="haw">Hawaiian</option><option value="mi">Maori</option><option value="cy">Welsh - Cymraeg</option><option value="ga">Irish - Gaeilge</option><option value="eu">Basque - Euskara</option><option value="ca">Catalan - Català</option><option value="gl">Galician - Galego</option><option value="cs">Czech - Čeština</option><option value="sk">Slovak - Slovenčina</option><option value="sl">Slovenian - Slovenščina</option><option value="hr">Croatian - Hrvatski</option><option value="sr">Serbian - Српски</option><option value="bs">Bosnian - Bosanski</option><option value="mk">Macedonian - Македонски</option><option value="bg">Bulgarian - Български</option><option value="ro">Romanian - Română</option><option value="hu">Hungarian - Magyar</option><option value="et">Estonian - Eesti</option><option value="lv">Latvian - Latviešu</option><option value="lt">Lithuanian - Lietuvių</option><option value="is">Icelandic - Íslenska</option><option value="sq">Albanian - Shqip</option><option value="hy">Armenian - Հայերեն</option><option value="ka">Georgian - ქართული</option><option value="kur">Kurdish - Kurdî</option></select><select id="bookMode" class="w-full border p-2 rounded mb-3"><option value="both">Original + Translated</option><option value="translated">Only Translated</option><option value="original">Only Original</option></select><button onclick="makeBook()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold">📖 Book Banao</button><div class="mt-2"><div class="progress-container"><div id="bookProgressBar" class="progress-bar"></div></div><div id="bookProgressText" class="progress-text">0%</div></div><div id="status" class="text-sm mt-1 bg-slate-50 p-2 rounded">Ready hai.</div><div id="downloadArea"></div></div></div>
+<div class="card !border-2 !border-emerald-300"><h2 class="font-bold"><div class="flex gap-2 items-center bg-white border rounded-xl p-2 text-sm my-2"><button onclick="clearAllHistory()" class="bg-red-600 text-white px-4 py-2 rounded font-bold">🧹 History Remove - Nayi Kitab</button><button onclick="alert('V54 me ab har page Strict Language Lock pe banega. Agar koi page Hindi/English me reh gaya hai to us ko dobara Translate Karo dabayen - wo ab sirf Urdu me aayega.')" class="bg-amber-600 text-white px-3 py-2 rounded font-bold text-xs">🔒 Mixed Language Fix - Sirf Ek Zubaan</button><button onclick="clearAllHistory()" class="hidden"</button><label class="text-xs"><input type="checkbox" id="autoClearChk" checked> Download ke baad khud saaf kar do</label><span id="langStatus" class="text-xs font-bold text-emerald-600"></span></div>Translation Preview </h2><div class="flex gap-2 mt-2 text-xs items-center"><button onclick="translatePreview()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-full font-bold">Translate Karo (Google)</button><button onclick="translateWithGemini()" class="bg-violet-600 text-white px-3 py-1.5 rounded-full font-bold">🤖 AI se Translate Karo (Gemini)</button><span>Page: <button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-1 rounded font-bold">◀</button> <span id="previewPageLabel">1 / 1</span> <button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-1 rounded font-bold">▶</button></span><span id="previewCount" class="text-slate-500"></span></div><div class="mt-2"><div class="progress-container"><div id="transProgressBar" class="progress-bar bg-emerald-500"></div></div><div id="transProgressText" class="progress-text">0%</div></div><div id="translatedBookView" class="flexBox w-full border p-3 rounded mt-2 bg-white text-[15px] leading-7 whitespace-pre-wrap" style="font-family:Georgia,serif"></div></div>
 </main>
 <script>
-// ===== V52 GLOBAL FIX - Sabse upar, taake koi function missing na ho =====
-function getMasterPrompt(){ try{ let v=document.getElementById('masterPrompt'); if(v && v.value && v.value.trim().length>20) return v.value; let saved=localStorage.getItem('master_prompt'); if(saved) return saved; }catch(_){} return 'Tum ek mahir kitab-saz ho. Text ko target zubaan me sahi, saaf, ghalti se paak tarjuma karo. Koi lafz miss mat karo. OCR ghaltiyan theek karo. Sirf kitab ka text do.'; }
+// ===== V54 GLOBAL FIX - Sabse upar, taake koi function missing na ho =====
+function getMasterPrompt(){ try{ let v=document.getElementById('masterPrompt'); if(v && v.value && v.value.trim().length>20) return v.value; let saved=localStorage.getItem('master_prompt'); if(saved) return saved; }catch(_){} return 'STRICT LANGUAGE LOCK - IS KO KABHI MAT TORO:
+- TARGET LANGUAGE HI AKHRI HAI. Agar target Urdu hai to SIRF Urdu (Urdu script - Arabic wali likhai) me likho. KABHI Hindi (Devanagari - हिन्दी wali likhai) mat likho.
+- Agar target Hindi hai to SIRF Hindi me, agar English hai to SIRF English me. Dono ko kabhi mix mat karo.
+- Urdu aur Hindi ko ek mat samjho. Urdu = اردو wali likhai. Hindi = हिन्दी wali likhai. Dono alag hain.
+- Koi bhi English lafz aise hi mat chhoro. Har English lafz ka tarjuma karo, siwaye naam (jaise Charing Cross, London) ke. Naam ko bhi target zubaan me likho, bracket me English mat likho.
+- Agar koi page pehle se English me hai to us ko bhi poora translate karo. Koi page English me mat chhoro.
+- Har page ko check karo: agar us me doosri zubaan ki likhai aa gayi hai to us ko turant target zubaan me badal do.
+Tum ek mahir kitab-saz ho. Text ko target zubaan me sahi, saaf, ghalti se paak tarjuma karo. Koi lafz miss mat karo. OCR ghaltiyan theek karo. Sirf kitab ka text do. Agar lafz na mile to mutradif likho, English mat chhoro.'; }
 function saveMasterPrompt(){ try{ localStorage.setItem('master_prompt', document.getElementById('masterPrompt').value); let e=document.getElementById('masterPromptStatus'); if(e) e.textContent='✅ Save ho gaya!'; }catch(_){} }
 function resetMasterPrompt(){ try{ localStorage.removeItem('master_prompt'); location.reload(); }catch(_){} }
 function setUiLang(v){ applyRealUiLang(v); }
@@ -76,12 +83,12 @@ function applyRealUiLang(v){
   // Teenon Language box ko sync karo - PRO wala + Upar wala + Neeche wala
   document.querySelectorAll('select[data-ui-lang], #proLang, #uiLang, #appLang').forEach(el=>{ try{ el.value=v; }catch(_){} });
   // Book ki zubaan bhi wahi
-  let tl=document.getElementById('targetLang'); if(tl){ try{ tl.value=v; }catch(_){} }
+  // V54: Kitab wali language ko chherna NAHI - alag hai
   let map={ ur:['پی ڈی ایف کتاب بنانے والا','پی ڈی ایف لگائیں','AI سے ترجمہ کریں','کتاب بنائیں','کتاب ڈاؤن لوڈ کریں'], en:['PDF Book Assembler PRO','Upload PDF','Translate with AI','Make Book','Download Book'], roman:['PDF Book Assembler PRO','PDF Lagayen','AI se Translate Karo','Book Banao','Book Download Karo'], ar:['مُجمّع كتب PDF','ارفع PDF','ترجم بالذكاء الاصطناعي','اصنع الكتاب','تحميل الكتاب'], hi:['PDF पुस्तक निर्माता','PDF लगाएं','AI से अनुवाद करें','किताब बनाएं','किताब डाउनलोड करें'], fr:['Assembleur de Livres PDF','Télécharger PDF','Traduire avec IA','Créer le Livre','Télécharger le Livre'], de:['PDF-Buch-Ersteller','PDF Hochladen','Mit KI Übersetzen','Buch Erstellen','Buch Herunterladen'], es:['Creador de Libros PDF','Subir PDF','Traducir con IA','Crear Libro','Descargar Libro'], tr:['PDF Kitap Oluşturucu','PDF Yükle','AI ile Çevir','Kitap Yap','Kitabı İndir'] };
   let d = map[v] || map['en'];
   // Title badlo
-  document.querySelectorAll('h1').forEach(h=>{ h.textContent=d[0]+' - V52'; });
-  document.title = d[0]+' - V52';
+  document.querySelectorAll('h1').forEach(h=>{ h.textContent=d[0]+' - V54'; });
+  document.title = d[0]+' - V54';
   // Buttons badlo - text dekh kar
   document.querySelectorAll('button').forEach(b=>{
     let t=(b.innerText||'');
@@ -105,7 +112,7 @@ function clearAllHistory(){
   let log=document.getElementById('liveLog'); if(log) log.innerHTML='Log: Saaf ho gaya, nayi kitab ke liye tayyar.';
   alert('✅ Saaf ho gaya!\nAb nayi kitab lagayen.');
 }
-// ===== V52 FIX END =====
+// ===== V54 FIX END =====
 
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 const UI_LANGS={roman:{},ur:{},en:{}}; function setUiLang(l){} function fixContentDir(){}
@@ -259,7 +266,14 @@ function updateGeminiUI(){ let k=getGeminiKey(); let el=document.getElementById(
 function aiPromptFor(target, style){
   let lang = target==='ur' ? 'saaf, kitab wali Urdu (Nastaliq ke qabil)' : target==='roman' ? 'Roman Urdu' : 'saaf, aasan English';
   let styleTxt = style==='aasan' ? 'Bilkul aasan lafzon me, bachon ko bhi samajh aaye.' : style==='roman' ? 'Roman Urdu me likho.' : style==='english' ? 'Saaf English me likho.' : 'Kitab wali, adabi lekin aasan Urdu me likho.';
-  return 'Tum ek professional kitab ke mutarjim (translator) ho. Neeche diye gaye text ko '+lang+' me translate karo. '+styleTxt+' Rules: 1) Matlab bilkul na badlo, koi baat na ghatao na barhao. 2) Naam, jagah ke naam, dates, numbers same rakho. 3) Paragraph aur line breaks same rakho. 4) Sirf translation do, koi explanation, heading, ya "ye raha translation" mat likho. 5) Agar text me Quran/Hadith ya shair ho to us ka adab qaim rakho. Text:\n\n';
+  return 'STRICT LANGUAGE LOCK - IS KO KABHI MAT TORO:
+- TARGET LANGUAGE HI AKHRI HAI. Agar target Urdu hai to SIRF Urdu (Urdu script - Arabic wali likhai) me likho. KABHI Hindi (Devanagari - हिन्दी wali likhai) mat likho.
+- Agar target Hindi hai to SIRF Hindi me, agar English hai to SIRF English me. Dono ko kabhi mix mat karo.
+- Urdu aur Hindi ko ek mat samjho. Urdu = اردو wali likhai. Hindi = हिन्दी wali likhai. Dono alag hain.
+- Koi bhi English lafz aise hi mat chhoro. Har English lafz ka tarjuma karo, siwaye naam (jaise Charing Cross, London) ke. Naam ko bhi target zubaan me likho, bracket me English mat likho.
+- Agar koi page pehle se English me hai to us ko bhi poora translate karo. Koi page English me mat chhoro.
+- Har page ko check karo: agar us me doosri zubaan ki likhai aa gayi hai to us ko turant target zubaan me badal do.
+ Tum ek professional kitab ke mutarjim (translator) ho. Neeche diye gaye text ko '+lang+' me translate karo. '+styleTxt+' Rules: 1) Matlab bilkul na badlo, koi baat na ghatao na barhao. 2) Naam, jagah ke naam, dates, numbers same rakho. 3) Paragraph aur line breaks same rakho. 4) Sirf translation do, koi explanation, heading, ya "ye raha translation" mat likho. 5) Agar text me Quran/Hadith ya shair ho to us ka adab qaim rakho. Text:\n\n';
 }
 async function geminiTranslateOne(text, target){
   let key=getGeminiKey(); if(!key) throw new Error('Gemini Key nahi lagi');
@@ -396,7 +410,7 @@ setTimeout(updateGeminiUI, 300);
 
 renderChapters();
 </script><script>
-// V52: V38 wala "kya fix hua" box BILKUL KHATAM - kisi ko nazar nahi aayega, Owner ko bhi nahi
+// V54: V38 wala "kya fix hua" box BILKUL KHATAM - kisi ko nazar nahi aayega, Owner ko bhi nahi
 function deleteV38BoxForever(){
   document.querySelectorAll('p,div,li,span,section').forEach(el=>{
     let t = (el.innerText||'');
@@ -410,7 +424,7 @@ window.addEventListener('load', ()=>{ deleteV38BoxForever(); setTimeout(deleteV3
 // Agar baad me bhi bane to turant delete
 try{ new MutationObserver(deleteV38BoxForever).observe(document.body, {childList:true, subtree:true}); }catch(_){}
 </script><script>
-// V52 LANGUAGE - Sirf 1 box, poori website asal me badlegi
+// V54 LANGUAGE - Sirf 1 box, poori website asal me badlegi
 function setUiLang(v){
   try{ localStorage.setItem('ui_lang', v); }catch(_){}
   // Google Translate cookie set karo - ye poori website ko us zubaan me kar dega
@@ -430,15 +444,68 @@ function setUiLang(v){
 function applyRealUiLang(v){
   try{ localStorage.setItem('ui_lang', v); }catch(_){}
   let pro=document.getElementById('proLang'); if(pro){ try{ pro.value=v; }catch(_){} }
-  let tl=document.getElementById('targetLang'); if(tl){ try{ tl.value=v; }catch(_){} }
+  // V54: Kitab wali language ko chherna NAHI - alag hai
   let map={ ur:['پی ڈی ایف کتاب بنانے والا','پی ڈی ایف لگائیں','AI سے ترجمہ کریں','کتاب بنائیں','کتاب ڈاؤن لوڈ کریں'], en:['PDF Book Assembler PRO','Upload PDF','Translate with AI','Make Book','Download Book'], roman:['PDF Book Assembler PRO','PDF Lagayen','AI se Translate Karo','Book Banao','Book Download Karo'] };
   let d = map[v] || map['en'];
-  document.querySelectorAll('h1').forEach(h=>{ h.textContent=d[0]+' - V52'; });
-  document.title = d[0]+' - V52';
+  document.querySelectorAll('h1').forEach(h=>{ h.textContent=d[0]+' - V54'; });
+  document.title = d[0]+' - V54';
   document.querySelectorAll('button').forEach(b=>{ let t=(b.innerText||''); if(t.includes('Translate')||t.includes('ترجم')||t.includes('AI se')) b.innerHTML='🤖 '+d[2]; else if(t.includes('Book Banao')||t.includes('کتاب بنائیں')||t.includes('Make Book')) b.innerHTML='📖 '+d[3]; else if(t.includes('Download')||t.includes('ڈاؤن')) b.innerHTML='⬇️ '+d[4]; });
   let st=document.getElementById('langStatus'); if(st) st.textContent='✅ Language: '+v+' - Ab website isi zubaan me hai.';
 }
 
 // Google Translate widget
 function googleTranslateElementInit(){ try{ new google.translate.TranslateElement({pageLanguage:"en", includedLanguages:"ur,en,ar,hi,bn,pa,fa,tr,fr,de,es,it,pt,ru,zh-CN,ja,ko,id,ms,th,vi,nl,sv,sw,ne,ta,te"}, "google_translate_element"); }catch(_){} }
-</script><div id="google_translate_element" style="display:none"></div><script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script></body></html>
+</script><div id="google_translate_element" style="display:none"></div><script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script><script>
+// ===== V54: DO ALAG LANGUAGE - Kabhi ek mat karo =====
+// 1. PRO wali = SIRF Website ki zubaan (Duniya ke liye)
+// 2. targetLang wali = SIRF Kitab ki zubaan
+// Dono ko sync NAHI karna!
+async function translateTextViaGoogle(text, to){
+  if(!text || !text.trim()) return text;
+  try{
+    let r = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='+to+'&dt=t&q='+encodeURIComponent(text));
+    let j = await r.json();
+    return (j[0]||[]).map(x=>x[0]).join('');
+  }catch(_){ return text; }
+}
+let __uiTranslating = false;
+async function setUiLang(v){
+  // Roman ke liye alag - Google ke paas Roman nahi, is liye apna dictionary
+  try{ localStorage.setItem('ui_lang', v); }catch(_){}
+  let pro=document.getElementById('proLang'); if(pro){ try{ pro.value=v; }catch(_){} }
+  // Kitab wali language ko CHHERNA NAHI - yehi pehli galti thi!
+  // Sirf website ka text badlo
+  if(__uiTranslating) return; __uiTranslating=true;
+  let st=document.getElementById('langStatus'); if(st) st.textContent='⏳ Website ki zubaan badal rahi hai: '+v+' ...';
+  if(v==='roman'){
+    // Roman dictionary - main buttons/lables Roman me
+    document.querySelectorAll('h1').forEach(h=>h.textContent='PDF Book Assembler PRO - V54');
+    document.querySelectorAll('button').forEach(b=>{ let t=b.innerText||''; if(t.includes('Translate')) b.innerHTML='🤖 AI se Translate Karo'; else if(t.includes('Book Banao')||t.includes('Make Book')) b.innerHTML='📖 Book Banao'; });
+    if(st) st.textContent='✅ Website Roman Urdu me hai. Kitab ki zubaan alag se set hoti hai.';
+    __uiTranslating=false; return;
+  }
+  if(v==='ur'){
+    document.querySelectorAll('h1').forEach(h=>h.textContent='پی ڈی ایف کتاب بنانے والا - V54');
+    if(st) st.textContent='✅ Website Urdu me hai.';
+    __uiTranslating=false; return;
+  }
+  // Baqi duniya ki zubaanen - Google se asal me translate karo, har button/label
+  let els = Array.from(document.querySelectorAll('h1,h2,h3,button,label,span,b,li,p')).slice(0,120);
+  for(let el of els){
+    let orig = el.getAttribute('data-orig') || el.innerText;
+    if(!orig || orig.length>120 || orig.includes('V54')) continue;
+    if(!el.getAttribute('data-orig')) el.setAttribute('data-orig', orig);
+    // Sirf chhota text translate karo, bara text nahi
+    if(orig.length<80){
+      let tr = await translateTextViaGoogle(orig, v);
+      if(tr && tr!==orig) el.textContent = tr;
+    }
+  }
+  if(st) st.textContent='✅ Website ki zubaan badal gayi: '+v+' - Ab duniya ke log apni zubaan me samajh sakenge. Kitab ki zubaan alag hai.';
+  __uiTranslating=false;
+}
+// Kitab ka Strict Rule - Mutradif wala
+function getBookLangRule(target){
+  return 'KITAB KA RULE (Sakht): Sirf "'+target+'" me translate karo. Agar kisi English lafz ka "'+target+'" me lafz nahi hai to us ko aise hi English me MAT chhoro, us ka MUTRADIF (Synonym) "'+target+'" me likho. Agar mutradif bhi na ho to us lafz ko "'+target+'" me samjha kar likho, jaise "Charing Cross - London ka ek mashhoor chowk". Kabhi do zubaanen mix mat karo. Kabhi Hindi ki likhai Urdu me mat milao. Kitab kharab nahi honi chahiye.';
+}
+</script></body></html>
