@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ur"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V40 GEMINI 3 FIXED</title>
+<title>PDF Book Assembler PRO - V42 RESUME + AUTO-RETRY</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -9,16 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 <style>body{font-family:Inter,system-ui}.card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:16px}.chapterRow{border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#f8fafc}.chapterRow.done{border-color:#22c55e;background:#f0fdf4}.chapNum{width:44px;height:44px;min-width:44px;border-radius:12px;background:linear-gradient(135deg,#4f46e5,#a855f7);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}#fileList{max-height:640px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}.flexBox{resize:vertical;overflow:auto;min-height:160px;height:160px}.rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu',serif}.ltr-text{direction:ltr;text-align:left}.progress-container{width:100%;background:#e2e8f0;border-radius:9999px;height:10px;overflow:hidden;margin-top:8px}.progress-bar{height:100%;background:#4f46e5;width:0%}.progress-text{font-size:12px;color:#64748b;margin-top:4px;text-align:right;font-weight:bold}</style></head>
 <body class="bg-slate-100 min-h-screen">
-<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10"><div class="max-w-6xl mx-auto flex justify-between items-center"><div><h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1><p class="text-xs opacity-90">V40 GEMINI 3 FIXED — Urdu ab Image se banega, symbols nahi aayenge</p></div><select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1"><option value="roman">Roman Urdu</option><option value="ur">اردو</option><option value="en">English</option></select></div></header>
+<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10"><div class="max-w-6xl mx-auto flex justify-between items-center"><div><h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1><p class="text-xs opacity-90">V42 RESUME + AUTO-RETRY — Urdu ab Image se banega, symbols nahi aayenge</p></div><select id="uiLang" onchange="setUILang(this.value)" class="text-black text-xs rounded px-2 py-1"><option value="roman">Roman Urdu</option><option value="ur">اردو</option><option value="en">English</option></select></div></header>
 <main class="max-w-7xl mx-auto p-4 space-y-4">
 <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-4 text-sm"><b>✅ V38 me kya fix hua:</b><ul class="list-disc ml-5 mt-1"><li><b>Root cause:</b> pdf-lib Urdu shaping nahi karta, is liye letters toot jate thay. Ab Urdu page <b>Canvas pe render</b> kar ke image ki tarah PDF me jayega — jaisa preview me dikhta hai, waisa hi PDF me aayega.</li><li><b>Preview = PDF:</b> Jo text Preview me hai, wohi ab Book me jayega. Agar Preview khali hai to pehle <b>Translate Karo</b> dabayen.</li><li><b>Auto-translate:</b> Agar aap bhool jayen to Book banate waqt khud translate ho jayega.</li></ul></div>
 <div class="bg-white rounded-xl p-3 border flex flex-wrap gap-3 items-center text-sm"><b>Settings:</b><label>OCR Language:</label><select id="ocrLang" class="border rounded px-2 py-1"><option value="urd">Urdu Only</option><option value="eng">English Only</option><option value="urd+eng">Urdu + English</option></select><label>OCR Quality:</label><select id="ocrQuality" class="border rounded px-2 py-1"><option value="2">High - 2.0</option><option value="1.5" selected>Medium - 1.5</option><option value="1.2">Fast - 1.2</option></select></div>
 
-<div class="card !border-2 !border-violet-300 bg-violet-50">
+<div id="ownerBar" class="bg-slate-900 text-white rounded-xl p-3 flex flex-wrap gap-2 items-center justify-between text-sm">
+  <b>🔒 Owner Area — Sirf Malik ke liye</b>
+  <span class="text-xs opacity-80">Dusron ko Gemini section nazar nahi aayega</span>
+  <button onclick="ownerUnlock()" class="bg-violet-600 px-4 py-1.5 rounded font-bold">🔓 Owner Login</button>
+  <button onclick="ownerLogout()" class="bg-slate-700 px-3 py-1.5 rounded text-xs">Lock Karo</button>
+  <span id="ownerStatus" class="text-xs font-bold text-yellow-300">🔒 Locked</span>
+</div>
+<div id="geminiCard" class="card !border-2 !border-violet-300 bg-violet-50" style="display:none">
 <h2 class="font-bold">🤖 AI Translate (Gemini - FREE, Email se Key)</h2>
 <p class="text-xs text-slate-600 mt-1">1) <b>aistudio.google.com</b> pe Gmail se login karein &nbsp; 2) <b>Get API Key</b> dabayen &nbsp; 3) Key yahan paste karein. Koi card nahi chahiye. Key sirf aap ke browser me rehti hai, kahin nahi bheji jati siwaye Google ke.</p>
 <div class="flex flex-wrap gap-2 mt-2">
-<input id="geminiKey" type="password" placeholder="Gemini API Key yahan paste karein (AIza...)" class="flex-1 min-w-[220px] border p-2 rounded text-sm">
+<input id="geminiKey" type="password" placeholder="xxxxxxxxxx — Key yahan paste karein, sirf aap ko nazar aayegi" class="flex-1 min-w-[220px] border p-2 rounded text-sm">
+<button onclick="toggleKeyView()" class="bg-slate-200 px-3 py-2 rounded font-bold text-sm">👁 Show/Hide</button>
 <button onclick="saveGeminiKey()" class="bg-violet-600 text-white px-4 py-2 rounded font-bold text-sm">💾 Key Save Karo</button>
 <button onclick="clearGeminiKey()" class="bg-slate-200 px-3 py-2 rounded font-bold text-sm">Clear</button>
 </div>
@@ -28,6 +36,12 @@
 <span id="geminiKeyStatus" class="text-xs font-bold text-slate-500">Key: Nahi lagi</span>
 </div>
 <div id="geminiStatus" class="text-xs mt-2 bg-white p-2 rounded">Gemini ready nahi — pehle key lagayen.</div>
+<div class="flex flex-wrap gap-2 mt-2 text-sm">
+<button onclick="translateWithGemini(true)" class="bg-emerald-600 text-white px-4 py-2 rounded font-bold">▶ Resume / Jari Rakho (Wahin se)</button>
+<button onclick="resetTranslationProgress()" class="bg-red-100 px-3 py-2 rounded font-bold text-sm">🔄 Shuru se (Reset Progress)</button>
+<span id="resumeInfo" class="text-xs text-slate-600 self-center"></span>
+</div>
+<p class="text-xs text-slate-500 mt-1">💡 Agar 16% ya 50% pe ruk jaye to ghabrayen nahi — <b>Resume</b> dabayen, wahi page se shuru hoga. Purane pages dobara translate nahi honge, quota bhi bachega.</p>
 </div>
 <div class="card"><h2 class="font-bold">1⃣ Chapters Add Karein</h2><input id="pdfInput" type="file" accept="application/pdf" multiple class="w-full border p-2 rounded mt-2"><div class="flex gap-2 mt-2 text-xs"><button onclick="sortByName()" class="bg-slate-200 px-3 py-1 rounded font-bold">🔤 Sort</button><button onclick="clearAll()" class="bg-red-100 px-3 py-1 rounded font-bold">🗑 Clear</button><button onclick="resetHang()" class="bg-red-500 text-white px-3 py-1 rounded font-bold">🔄 Reset</button></div><div id="fileList" class="mt-3"></div></div>
 <div class="grid md:grid-cols-2 gap-4"><div class="card"><h2 class="font-bold">2⃣ Extract Text</h2><button onclick="runFullOCR()" class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold mt-2">⚡ Smart Extract / OCR</button><div class="mt-2"><div class="progress-container"><div id="ocrProgressBar" class="progress-bar"></div></div><div id="ocrProgressText" class="progress-text">0%</div></div><div id="ocrStatus" class="text-sm mt-1 bg-slate-50 p-2 rounded">Abhi text extract nahi hua.</div><textarea id="ocrText" class="flexBox w-full border p-2 rounded mt-1"></textarea></div>
@@ -125,9 +139,49 @@ async function onChapterCoverChange(idx,e){let f=e.target.files[0];if(!f)return;
 function sortByName(){chapters.sort((a,b)=>a.title.localeCompare(b.title));renderChapters()}function clearAll(){chapters=[];document.getElementById('ocrText').value='';renderChapters();rebuildSyncedPages()}function resetHang(){_busy=false;_cancel=true}
 document.getElementById('pdfInput').addEventListener('change',async e=>{let files=Array.from(e.target.files);for(let f of files){let buf=await f.arrayBuffer();let pdf=await pdfjsLib.getDocument({data:buf}).promise;chapters.push({file:f,title:f.name.replace(/\.pdf$/i,''),pages:pdf.numPages,text:'',pagesText:[],ocrDone:false})}renderChapters()});
 
+
+// ============ OWNER LOCK (V41) - Key sirf malik ko nazar aayegi ============
+function ownerUnlock(){
+  let savedPin = localStorage.getItem('owner_pin');
+  if(!savedPin){
+    let p1 = prompt('Pehli dafa hai.\nApna SECRET CODE banayen (koi bhi 4-6 lafz/number, jese: shahid123)\nYe code sirf aap ko yaad rahega, kisi ko mat batayen:');
+    if(!p1 || p1.length<4) return alert('Code kam se kam 4 harf ka rakhein.');
+    let p2 = prompt('Dobara wahi SECRET CODE likhein:');
+    if(p1!==p2) return alert('Dono code same nahi hain. Dobara try karein.');
+    localStorage.setItem('owner_pin', btoa(p1));
+    alert('✅ Owner Code save ho gaya! Ab isi code se khulega.');
+    showOwnerPanel(); return;
+  }
+  let inp = prompt('🔒 Owner SECRET CODE likhein:');
+  if(!inp) return;
+  if(btoa(inp)===savedPin){ showOwnerPanel(); } else alert('❌ Ghalat Code! Ye section sirf malik ke liye hai.');
+}
+function showOwnerPanel(){
+  document.getElementById('geminiCard').style.display='block';
+  document.getElementById('ownerStatus').textContent='🔓 Owner Mode ON - Sirf aap dekh rahe ho';
+  document.getElementById('ownerStatus').style.color='#4ade80';
+  updateGeminiUI(); updateKeyMaskedView();
+  // Auto-lock 10 minute baad
+  setTimeout(()=>{ if(document.getElementById('geminiCard')) document.getElementById('geminiCard').style.display='none'; document.getElementById('ownerStatus').textContent='🔒 Locked (Auto)'; }, 10*60*1000);
+}
+function ownerLogout(){
+  document.getElementById('geminiCard').style.display='none';
+  document.getElementById('ownerStatus').textContent='🔒 Locked';
+  document.getElementById('ownerStatus').style.color='#fde047';
+  alert('🔒 Lock ho gaya. Ab dusron ko Gemini section nazar nahi aayega.');
+}
+function toggleKeyView(){ let el=document.getElementById('geminiKey'); el.type = el.type==='password' ? 'text' : 'password'; }
+function updateKeyMaskedView(){
+  let k=localStorage.getItem('gemini_api_key')||'';
+  let el=document.getElementById('geminiKey');
+  if(k && el){ el.value=k; el.placeholder='xxxxxxxxxx — Key lagi hui hai ✅ (Change karne ke liye nayi paste karein)'; }
+}
+// saveGeminiKey ko secure banao: save ke baad input ko xxxxx jaisa dikhao
+const _oldSave = saveGeminiKey;
+
 // ============ GEMINI AI TRANSLATE (V39) ============
 function getGeminiKey(){ return (document.getElementById('geminiKey').value||'').trim() || localStorage.getItem('gemini_api_key')||''; }
-function saveGeminiKey(){ let k=(document.getElementById('geminiKey').value||'').trim(); if(!k) return alert('Pehle key paste karein! aistudio.google.com se milti hai.'); localStorage.setItem('gemini_api_key',k); updateGeminiUI(); alert('✅ Key save ho gayi! Ab AI se Translate Karo dabayen.'); }
+function saveGeminiKey(){ let k=(document.getElementById('geminiKey').value||'').trim(); if(!k) return alert('Pehle key paste karein! aistudio.google.com se milti hai.'); localStorage.setItem('gemini_api_key',k); updateGeminiUI(); alert('✅ Key save ho gayi! Ye key sirf isi browser me save hui hai. HTML file me nahi likhi gayi, is liye dusre log is ko copy nahi kar sakte.'); document.getElementById('geminiKey').type='password'; }
 function clearGeminiKey(){ localStorage.removeItem('gemini_api_key'); document.getElementById('geminiKey').value=''; updateGeminiUI(); }
 function updateGeminiUI(){ let k=getGeminiKey(); let el=document.getElementById('geminiKeyStatus'); if(el) el.textContent = k ? 'Key: Lagi hui hai ✅ ('+k.slice(0,6)+'...)' : 'Key: Nahi lagi'; if(document.getElementById('geminiKey') && !document.getElementById('geminiKey').value && k) document.getElementById('geminiKey').value=k; let s=document.getElementById('geminiStatus'); if(s) s.textContent = k ? '✅ Gemini ready hai. Ab AI se Translate Karo dabayen.' : 'Gemini ready nahi — pehle key lagayen.'; }
 function aiPromptFor(target, style){
@@ -158,19 +212,59 @@ async function geminiTranslateOne(text, target){
   }
   throw new Error('Koi model nahi chala. Aakhri error: '+lastErr);
 }
+
+async function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+async function callGeminiWithRetry(text, target, pageLabel){
+  let tries = 0;
+  while(tries < 6){
+    try{ return await geminiTranslateOne(text, target); }
+    catch(e){
+      let msg = e.message||'';
+      let isBusy = /high demand|overloaded|503|429|quota|rate|try again|temporarily/i.test(msg);
+      tries++;
+      if(!isBusy || tries>=6) throw e;
+      let wait = Math.min(60000, 8000 * Math.pow(2, tries-1)); // 8s,16s,32s,60s...
+      let gs=document.getElementById('geminiStatus');
+      if(gs) gs.innerHTML='⏳ Google busy hai (High Demand) — '+pageLabel+' — Auto Retry '+tries+'/5, '+Math.round(wait/1000)+' sec ruk raha hoon...';
+      await sleep(wait);
+    }
+  }
+}
 async function geminiTranslatePageWise(ch, target, cb){
   let srcPages=ch.pagesText||[ch.text||'']; let out=[];
+  // RESUME: pehle se hue pages ko dobara mat karo
+  let prev = ch.translatedPages || [];
+  let startFrom = 0;
+  // Agar prev me khali string nahi aur length same hai to wahan se
+  for(let i=0;i<prev.length;i++){ if(prev[i] && prev[i].trim()) startFrom=i+1; else break; }
+  // out ko prev se bharo taake purana kaam zaya na ho
+  for(let i=0;i<srcPages.length;i++){ out.push(prev[i]||''); }
+  // Progress save karne ke liye key: chapter title + pages
   for(let pi=0; pi<srcPages.length; pi++){
-    let pg=cleanOCRText(stripInvisible(srcPages[pi]||'')); if(!pg.trim()){ out.push(''); continue; }
-    // Lambi page ko 2 hissay me torh do taake limit na lage
-    if(pg.length>3500){ let mid=Math.floor(pg.length/2); let a=await geminiTranslateOne(pg.slice(0,mid),target); await new Promise(r=>setTimeout(r,800)); let b=await geminiTranslateOne(pg.slice(mid),target); out.push(a+'\n'+b); }
-    else { out.push(await geminiTranslateOne(pg,target)); }
+    if(pi < startFrom){ if(cb) cb((pi+1)/srcPages.length*100); continue; } // pehle se hua hua, skip
+    let pg=cleanOCRText(stripInvisible(srcPages[pi]||'')); if(!pg.trim()){ out[pi]=''; continue; }
+    try{
+      if(pg.length>3500){ let mid=Math.floor(pg.length/2); let a=await callGeminiWithRetry(pg.slice(0,mid),target,'Page '+(pi+1)); await sleep(800); let b=await callGeminiWithRetry(pg.slice(mid),target,'Page '+(pi+1)+' (2nd half)'); out[pi]=a+'\n'+b; }
+      else { out[pi]=await callGeminiWithRetry(pg,target,'Page '+(pi+1)); }
+    }catch(e){
+      // Yahan ruk jao, lekin jo hua hai wo save rakho - agle Resume pe wahin se
+      ch.translatedPages = out;
+      try{ localStorage.setItem('pdf_trans_progress_'+ch.title, JSON.stringify(out)); }catch(_){}
+      throw new Error('Page '+(pi+1)+' pe ruka: '+e.message+' | ✅ '+pi+' pages save hain. Resume dabayen.');
+    }
+    ch.translatedPages = out; // har page ke baad save
+    try{ localStorage.setItem('pdf_trans_progress_'+ch.title, JSON.stringify(out)); }catch(_){}
     if(cb) cb((pi+1)/srcPages.length*100);
-    await new Promise(r=>setTimeout(r,600)); // rate-limit se bachne ke liye thora wait
+    await sleep(600);
   }
   return out;
 }
-async function translateWithGemini(){
+function resetTranslationProgress(){
+  if(!confirm('Kya aap waqai shuru se karna chahte ho? Saare hue pages delete ho jayenge.')) return;
+  chapters.forEach(ch=>{ ch.translatedPages=null; try{ localStorage.removeItem('pdf_trans_progress_'+ch.title); }catch(_){} });
+  rebuildSyncedPages(); alert('Reset ho gaya. Ab shuru se hoga.');
+}
+async function translateWithGemini(isResume=false){
   let target=document.getElementById('targetLang').value;
   if(!chapters.length) return alert('Pehle chapters add karein');
   if(!getGeminiKey()){ alert('Pehle Gemini Key lagayen!\n\nTareeqa:\n1) aistudio.google.com kholein\n2) Gmail se login karein\n3) Get API Key dabayen\n4) Key copy kar ke yahan paste karein aur Save dabayen'); document.getElementById('geminiKey').focus(); return; }
@@ -178,13 +272,18 @@ async function translateWithGemini(){
   document.getElementById('geminiStatus').textContent='🤖 Gemini translate kar raha hai... thora sabar karein.';
   updateProgress('trans',0);
   try{
-    for(let ci=0; ci<chapters.length; ci++){
+    // Resume: browser me save hua progress wapis lao
+  chapters.forEach(ch=>{ try{ let saved=localStorage.getItem('pdf_trans_progress_'+ch.title); if(saved){ let arr=JSON.parse(saved); if(arr && arr.length) ch.translatedPages=arr; } }catch(_){} });
+  let doneCount = chapters.reduce((a,ch)=>a+((ch.translatedPages||[]).filter(x=>x&&x.trim()).length),0);
+  let totalCount = chapters.reduce((a,ch)=>a+(ch.pagesText||[]).length,0);
+  let ri=document.getElementById('resumeInfo'); if(ri) ri.textContent = 'Progress: '+doneCount+' / '+totalCount+' pages pehle se hue hain ✅';
+  for(let ci=0; ci<chapters.length; ci++){
       if(chapters[ci].pagesText){ chapters[ci].translatedPages=await geminiTranslatePageWise(chapters[ci], target, (pct)=>updateProgress('trans', ((ci+(pct/100))/chapters.length)*100)); }
     }
     rebuildSyncedPages(); updateProgress('trans',100);
     document.getElementById('geminiStatus').innerHTML='✅ AI Translation ho gayi! Preview check karein, phir Book Banao dabayen.';
     _busy=false;
-  }catch(e){ _busy=false; document.getElementById('geminiStatus').textContent='❌ Gemini Error: '+e.message+' — Agar "API key not valid" likha hai to key dobara copy karein. Agar "429 / quota" likha hai to 1 minute ruk kar dobara try karein.'; console.error(e); alert('Gemini Error:\n'+e.message); }
+  }catch(e){ _busy=false; document.getElementById('geminiStatus').innerHTML='❌ Ruk gaya, lekin kaam save hai. <b>Resume / Jari Rakho</b> dabayen, wahin se shuru hoga. Error: '+e.message+' — Agar "API key not valid" likha hai to key dobara copy karein. Agar "429 / quota" likha hai to 1 minute ruk kar dobara try karein.'; console.error(e); alert('Gemini Error:\n'+e.message); }
 }
 // Key ko page khulte hi load karo
 setTimeout(updateGeminiUI, 300);
