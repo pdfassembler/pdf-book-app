@@ -418,30 +418,7 @@ function updateKeyUI(){
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Main Translation Function with Model Rotation and Retry
-async function geminiTranslateOne(text, target){
-  let key = getGeminiKey();
-  if(!key) throw new Error('Key nahi lagi. Pehle Owner Login karke key save karein.');
-  
-  let prompt = `Tum ek professional translator ho. Is text ko SIRF "${target}" zubaan mein translate karo. 
-  RULES:
-  1. AGAR TARGET URDU HAI: Sirf asal Urdu script (Arabic wali likhai - اردو) mein likho. KABHI BHI Roman Urdu (English alphabets) ya Hindi (Devanagari) use mat karna.
-  2. Agar kisi word ka tarjuma nahi milta, to usko wesa hi chhor do.
-  3. Koi wazahat (explanation) mat likho, sirf translated text do.
-  
-  Text to translate:
-  ${text}`;
 
-  let models = ['gemini-3.5-flash-lite', 'gemini-3.0-flash', 'gemini-3-flash-preview'];
-  let lastError = '';
-
-  for (let model of models) {
-      for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-              let url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-              let body = {
-                contents: [{parts: [{text: prompt}]}],
-                generationConfig: {temperature: 0.0, maxOutputTokens: 8000} // 0.0 temperature for strictness
-              };
               
               let r = await fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
               let j = await r.json();
