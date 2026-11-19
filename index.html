@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V57.3 (Secure)</title>
+<title>PDF Book Assembler PRO - V57.7 (Perfect Translation)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -31,9 +31,8 @@ body{font-family:Inter,system-ui}
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
       <h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1>
-      <p class="text-xs opacity-90">V57.3 — Secure Cloudflare Edition</p>
+      <p class="text-xs opacity-90">V57.7 — Perfect Translation & Ligature Fix</p>
     </div>
-    <!-- Owner Login ka button ab API key ke liye nahi hai -->
     <button onclick="alert('API Key ab Cloudflare Worker mein safe hai. Yahan koi key nahi dalni.')" class="bg-black/30 hover:bg-black/50 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
       🔒 Owner Info
     </button>
@@ -103,7 +102,7 @@ body{font-family:Inter,system-ui}
             <button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-0.5 rounded hover:bg-slate-300">▶</button>
           </div>
         </div>
-        <div id="translatedBookView" class="flexBox w-full border p-3 rounded-lg bg-slate-50 text-[14px] leading-7 whitespace-pre-wrap overflow-y-auto" style="font-family:Georgia,serif"></div>
+        <div id="translatedBookView" class="flexBox w-full border p-3 rounded-lg bg-slate-50 text-[14px] leading-7 whitespace-pre-wrap overflow-y-auto" style="font-family:'Noto Nastaliq Urdu', serif"></div>
       </div>
     </div>
 
@@ -126,6 +125,8 @@ body{font-family:Inter,system-ui}
             <option value="hi">Hindi - हिन्दी</option>
             <option value="fr">French - Français</option>
             <option value="es">Spanish - Español</option>
+            <option value="zh">Chinese - 中文</option>
+            <option value="ja">Japanese - 日本語</option>
           </select>
         </div>
         <div>
@@ -155,9 +156,6 @@ body{font-family:Inter,system-ui}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ==========================================
-// AAPKA CLOUDFLARE WORKER URL YAHAN HAI
-// ==========================================
 const WORKER_URL = 'https://gemini-proxy.uvstorynet.workers.dev'; 
 
 let chapters = [];
@@ -168,7 +166,7 @@ let _transPagesSync = [];
 let _tesseractWorker = null;
 
 // ==========================================
-// HELPERS & SANITIZER
+// HELPERS & TEXT SANITIZER (Ligature Fix)
 // ==========================================
 function stripInvisible(s){ return s ? String(s).replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g,'') : ''; }
 function updateProgress(p, pc){
@@ -190,33 +188,54 @@ function cleanOCRText(t){
   return out.join('\n\n');
 }
 
-// ==========================================
-// ULTRA STRICT LANGUAGE SANITIZER
-// ==========================================
+// The Urdu Ligature Fixer
+function fixUrduLigatures(text) {
+    // Basic cleanups for broken Urdu text
+    let fixed = text;
+    
+    // Remove extra spaces between Urdu characters (if any)
+    fixed = fixed.replace(/([\u0600-\u06FF])\s+([\u0600-\u06FF])/g, '$1$2');
+    
+    // Fix broken diacritics or isolated characters
+    fixed = fixed.replace(/\s+([،۔؛؟])/g, '$1'); // Remove space before punctuation
+    fixed = fixed.replace(/([،۔؛؟])\s+/g, '$1 '); // Ensure space after punctuation
+    
+    // Sometimes AI gives separated letters like "ا ب پ", we want to join them
+    // If there are more than 2 single characters separated by spaces in a row, join them
+    fixed = fixed.replace(/(?:\b\w\b\s+){2,}\b\w\b/g, function(match) {
+        return match.replace(/\s+/g, '');
+    });
+
+    return fixed;
+}
+
 function sanitizeOutput(text, targetLang) {
     if (!text) return "";
     
     if (targetLang === 'ur') {
+        // 1. Remove Devanagari (Hindi)
         text = text.replace(/[\u0900-\u097F]+/g, '');
         
+        // 2. Check for Roman Urdu
         let urduChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
         let engChars = (text.match(/[A-Za-z]/g) || []).length;
-        
         if (engChars > urduChars * 1.5 && engChars > 20) {
-            throw new Error("AI ne Roman Urdu mein translate kar diya tha. Auto-fix ho raha hai, dobara koshish ki ja rahi hai...");
+            throw new Error("AI ne Roman Urdu mein translate kar diya tha. Auto-fix ho raha hai...");
         }
 
+        // 3. Skip pure English lines
         let lines = text.split('\n');
         let cleanLines = [];
         for (let line of lines) {
             let words = line.trim().split(/\s+/);
             let engWords = words.filter(w => /^[A-Za-z]+$/.test(w)).length;
-            if (words.length > 0 && engWords / words.length > 0.8 && words.length < 10) {
-                continue; 
-            }
+            if (words.length > 0 && engWords / words.length > 0.8 && words.length < 10) continue; 
             cleanLines.push(line);
         }
-        return cleanLines.join('\n');
+        
+        // 4. Fix broken letters
+        let finalText = cleanLines.join('\n');
+        return fixUrduLigatures(finalText);
     }
     
     if (targetLang === 'en') {
@@ -353,7 +372,7 @@ async function runFullOCR(onlyIdx = null){
 // ==========================================
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function geminiTranslateOne(text, target){
+async function geminiTranslateOne(text, target, retries = 3){
   let prompt = `Tum ek professional translator ho. Is text ko SIRF "${target}" zubaan mein translate karo. 
   RULES:
   1. AGAR TARGET URDU HAI: Sirf asal Urdu script (Arabic wali likhai - اردو) mein likho. KABHI BHI Roman Urdu (English alphabets) ya Hindi (Devanagari) use mat karna.
@@ -368,27 +387,37 @@ async function geminiTranslateOne(text, target){
     generationConfig: {temperature: 0.0, maxOutputTokens: 8000}
   };
 
-  // Cloudflare Worker ko call karein (key wahan safe hai)
-  let r = await fetch(WORKER_URL, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body)
-  });
-  
-  let j = await r.json();
-  
-  if (!r.ok) {
-    let msg = (j.error && j.error.message) || 'API Error';
-    if (msg.includes('429') || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('limit')) {
-        throw new Error('Quota Exceeded');
+  for(let i=0; i<retries; i++) {
+    try {
+      let r = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
+      
+      let j = await r.json();
+      
+      if (!r.ok) {
+        let msg = (j.error && j.error.message) || 'API Error';
+        if (msg.includes('503') || msg.includes('high demand')) {
+           document.getElementById('geminiStatus').textContent = `⚠️ Google busy hai. Retrying (${i+1}/${retries})...`;
+           await sleep(5000);
+           continue; // Retry
+        }
+        if (msg.includes('429') || msg.toLowerCase().includes('quota')) {
+            throw new Error('Quota Exceeded. Please wait.');
+        }
+        throw new Error(msg);
+      }
+      
+      let out = j.candidates[0].content.parts.map(p => p.text || '').join('');
+      return sanitizeOutput(out, target);
+      
+    } catch(e) {
+      if(i === retries - 1) throw e;
+      await sleep(3000);
     }
-    throw new Error(msg);
   }
-  
-  let out = j.candidates[0].content.parts.map(p => p.text || '').join('');
-  
-  // Sanitize check
-  return sanitizeOutput(out, target);
 }
 
 async function translateWithGemini(){
@@ -418,7 +447,7 @@ async function translateWithGemini(){
         donePages++;
         updateProgress('trans', (donePages / totalPages) * 100);
         
-        await sleep(2000);
+        await sleep(2000); // 2s delay to avoid hitting rate limits
       }
       ch.translatedPages = outPages;
     }
@@ -480,7 +509,7 @@ function syncedPage(d){
 }
 
 // ==========================================
-// BOOK ASSEMBLER (Urdu Canvas Fix)
+// BOOK ASSEMBLER (UNIVERSAL LANGUAGE FIX)
 // ==========================================
 async function ensureUrduFont(){
   try{
@@ -551,19 +580,29 @@ async function makeBook(){
   try {
     const merged = await PDFLib.PDFDocument.create();
     const font = await merged.embedFont(PDFLib.StandardFonts.Helvetica);
-    const bold = await merged.embedFont(PDFLib.StandardFonts.HelveticaBold);
 
+    // === COVER PAGE ===
     let cover = merged.addPage([595, 842]);
-    cover.drawText(bookName.slice(0, 40), {x: 50, y: 650, size: 30, font: bold});
+    let coverImgData = await renderPageAsImage(bookName, /[\u0600-\u06FF]/.test(bookName));
+    let res = await fetch(coverImgData);
+    let coverBuf = await res.arrayBuffer();
+    let coverImg = await merged.embedPng(coverBuf);
+    cover.drawImage(coverImg, {x: 0, y: 0, width: 595, height: 842});
 
     let totalChapters = chapters.length;
     for(let i = 0; i < chapters.length; i++){
       let ch = chapters[i];
       
+      // === CHAPTER DIVIDER PAGE ===
       let div = merged.addPage([595, 842]);
-      div.drawText('CHAPTER ' + (i+1), {x: 200, y: 500, size: 24, font: bold});
-      div.drawText(ch.title.slice(0, 40), {x: 150, y: 460, size: 18, font: bold});
+      let divText = "CHAPTER " + (i+1) + "\n\n" + ch.title;
+      let divImgData = await renderPageAsImage(divText, /[\u0600-\u06FF]/.test(divText));
+      let divRes = await fetch(divImgData);
+      let divBuf = await divRes.arrayBuffer();
+      let divImg = await merged.embedPng(divBuf);
+      div.drawImage(divImg, {x: 0, y: 0, width: 595, height: 842});
 
+      // === TRANSLATED PAGES ===
       if(mode !== 'original'){
         let pagesToWrite = ch.translatedPages || [];
         for(let pi = 0; pi < pagesToWrite.length; pi++){
@@ -581,6 +620,7 @@ async function makeBook(){
         }
       }
 
+      // === ORIGINAL PAGES ===
       if(mode !== 'translated'){
         let buf = await ch.file.arrayBuffer();
         let src = await PDFLib.PDFDocument.load(buf);
