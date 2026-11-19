@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V57.7 (Perfect Translation)</title>
+<title>PDF Book Assembler PRO - V57.9 (Strict Target Language)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -19,7 +19,7 @@ body{font-family:Inter,system-ui}
 #fileList{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
 .flexBox{resize:vertical;overflow:auto;min-height:120px;height:120px}
 .rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu',serif}
-.ltr-text{direction:ltr;text-align:left}
+.ltr-text{direction:ltr;text-align:left;font-family:Georgia,serif}
 .progress-container{width:100%;background:#e2e8f0;border-radius:9999px;height:8px;overflow:hidden;margin-top:6px}
 .progress-bar{height:100%;background:#4f46e5;width:0%;transition:width 0.3s}
 .progress-text{font-size:11px;color:#64748b;margin-top:4px;text-align:right;font-weight:bold}
@@ -31,9 +31,9 @@ body{font-family:Inter,system-ui}
   <div class="max-w-6xl mx-auto flex justify-between items-center">
     <div>
       <h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1>
-      <p class="text-xs opacity-90">V57.7 — Perfect Translation & Ligature Fix</p>
+      <p class="text-xs opacity-90">V57.9 — Strict Target Language Fix</p>
     </div>
-    <button onclick="alert('API Key ab Cloudflare Worker mein safe hai. Yahan koi key nahi dalni.')" class="bg-black/30 hover:bg-black/50 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
+    <button onclick="alert('API Key ab Cloudflare Worker mein safe hai.')" class="bg-black/30 hover:bg-black/50 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
       🔒 Owner Info
     </button>
   </div>
@@ -55,8 +55,8 @@ body{font-family:Inter,system-ui}
     <div class="flex items-center gap-2">
       <label>Quality:</label>
       <select id="ocrQuality" class="border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300">
-        <option value="2">High</option>
-        <option value="1.5" selected>Medium</option>
+        <option value="2" selected>High</option>
+        <option value="1.5">Medium</option>
         <option value="1.2">Fast</option>
       </select>
     </div>
@@ -102,7 +102,7 @@ body{font-family:Inter,system-ui}
             <button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-0.5 rounded hover:bg-slate-300">▶</button>
           </div>
         </div>
-        <div id="translatedBookView" class="flexBox w-full border p-3 rounded-lg bg-slate-50 text-[14px] leading-7 whitespace-pre-wrap overflow-y-auto" style="font-family:'Noto Nastaliq Urdu', serif"></div>
+        <div id="translatedBookView" class="flexBox w-full border p-3 rounded-lg bg-slate-50 text-[14px] leading-7 whitespace-pre-wrap overflow-y-auto"></div>
       </div>
     </div>
 
@@ -113,13 +113,13 @@ body{font-family:Inter,system-ui}
       <div class="space-y-3">
         <div>
           <label class="text-xs font-bold text-slate-600 mb-1 block">Book Name</label>
-          <input id="bookName" value="Meri Book" class="w-full border p-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300">
+          <input id="bookName" value="The Last Protector" class="w-full border p-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300">
         </div>
         <div>
           <label class="text-xs font-bold text-slate-600 mb-1 block">Target Language</label>
           <select id="targetLang" class="w-full border p-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300">
+            <option value="en" selected>English</option>
             <option value="ur">Urdu - اردو</option>
-            <option value="en">English</option>
             <option value="roman">Roman Urdu</option>
             <option value="ar">Arabic - العربية</option>
             <option value="hi">Hindi - हिन्दी</option>
@@ -166,7 +166,7 @@ let _transPagesSync = [];
 let _tesseractWorker = null;
 
 // ==========================================
-// HELPERS & TEXT SANITIZER (Ligature Fix)
+// HELPERS & GARBAGE FILTER
 // ==========================================
 function stripInvisible(s){ return s ? String(s).replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g,'') : ''; }
 function updateProgress(p, pc){
@@ -175,6 +175,7 @@ function updateProgress(p, pc){
   if(b) b.style.width = Math.min(100, Math.max(0, pc)) + '%';
   if(t) t.textContent = Math.round(pc) + '%';
 }
+
 function cleanOCRText(t){
   if(!t) return '';
   let lines = String(t).split('\n'), out = [], cur = '';
@@ -185,45 +186,51 @@ function cleanOCRText(t){
     else cur = cur ? cur + ' ' + x : x;
   }
   if(cur) out.push(cur);
-  return out.join('\n\n');
+  
+  // Garbage Filter: Remove lines repeating more than 3 times
+  let linesArray = out.join('\n\n').split('\n\n');
+  let uniqueLines = [];
+  let seen = {};
+  for (let line of linesArray) {
+      let cleanLine = line.trim();
+      if (!cleanLine || cleanLine.split(/\s+/).length < 3) continue;
+      if (seen[cleanLine]) seen[cleanLine]++;
+      else { seen[cleanLine] = 1; uniqueLines.push(cleanLine); }
+  }
+  let finalClean = uniqueLines.filter(line => seen[line] <= 3);
+  return finalClean.join('\n\n');
 }
 
-// The Urdu Ligature Fixer
-function fixUrduLigatures(text) {
-    // Basic cleanups for broken Urdu text
-    let fixed = text;
-    
-    // Remove extra spaces between Urdu characters (if any)
-    fixed = fixed.replace(/([\u0600-\u06FF])\s+([\u0600-\u06FF])/g, '$1$2');
-    
-    // Fix broken diacritics or isolated characters
-    fixed = fixed.replace(/\s+([،۔؛؟])/g, '$1'); // Remove space before punctuation
-    fixed = fixed.replace(/([،۔؛؟])\s+/g, '$1 '); // Ensure space after punctuation
-    
-    // Sometimes AI gives separated letters like "ا ب پ", we want to join them
-    // If there are more than 2 single characters separated by spaces in a row, join them
-    fixed = fixed.replace(/(?:\b\w\b\s+){2,}\b\w\b/g, function(match) {
-        return match.replace(/\s+/g, '');
-    });
-
-    return fixed;
-}
-
+// ==========================================
+// STRICT LANGUAGE SANITIZER
+// ==========================================
 function sanitizeOutput(text, targetLang) {
     if (!text) return "";
     
+    // STRICT ENGLISH CHECK
+    if (targetLang === 'en') {
+        // Agar AI ne ghalti se Urdu ya Hindi likh di hai, to error throw karo taake dobara try ho
+        let urduChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
+        let hindiChars = (text.match(/[\u0900-\u097F]/g) || []).length;
+        
+        if ((urduChars > 10 || hindiChars > 10) && (urduChars + hindiChars) > text.length * 0.1) {
+            throw new Error("AI ne Urdu/Hindi mein likha hai. Dobara English mein translate kiya ja raha hai...");
+        }
+        // Remove any leftover Urdu/Hindi
+        return text.replace(/[\u0600-\u06FF\u0900-\u097F]+/g, '');
+    }
+    
+    // STRICT URDU CHECK
     if (targetLang === 'ur') {
-        // 1. Remove Devanagari (Hindi)
         text = text.replace(/[\u0900-\u097F]+/g, '');
         
-        // 2. Check for Roman Urdu
         let urduChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
         let engChars = (text.match(/[A-Za-z]/g) || []).length;
+        
         if (engChars > urduChars * 1.5 && engChars > 20) {
-            throw new Error("AI ne Roman Urdu mein translate kar diya tha. Auto-fix ho raha hai...");
+            throw new Error("AI ne Roman Urdu mein likha hai. Dobara Urdu mein translate kiya ja raha hai...");
         }
-
-        // 3. Skip pure English lines
+        
         let lines = text.split('\n');
         let cleanLines = [];
         for (let line of lines) {
@@ -232,14 +239,7 @@ function sanitizeOutput(text, targetLang) {
             if (words.length > 0 && engWords / words.length > 0.8 && words.length < 10) continue; 
             cleanLines.push(line);
         }
-        
-        // 4. Fix broken letters
-        let finalText = cleanLines.join('\n');
-        return fixUrduLigatures(finalText);
-    }
-    
-    if (targetLang === 'en') {
-        return text.replace(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]+/g, '');
+        return cleanLines.join('\n');
     }
     
     return text;
@@ -349,7 +349,9 @@ async function runFullOCR(onlyIdx = null){
           pageTxt = stripInvisible(ret.data.text || '');
         }catch(e){}
       }
-      pagesText.push(pageTxt);
+      
+      let cleaned = cleanOCRText(pageTxt);
+      pagesText.push(cleaned);
       donePages++;
       updateProgress('ocr', (donePages / totalPages) * 100);
       document.getElementById('ocrStatus').textContent = `Extracting: ${ch.title} (Page ${p}/${pdf.numPages})`;
@@ -373,18 +375,19 @@ async function runFullOCR(onlyIdx = null){
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function geminiTranslateOne(text, target, retries = 3){
-  let prompt = `Tum ek professional translator ho. Is text ko SIRF "${target}" zubaan mein translate karo. 
+  let prompt = `You are a professional translator. Translate the following text STRICTLY and ONLY into "${target}". 
   RULES:
-  1. AGAR TARGET URDU HAI: Sirf asal Urdu script (Arabic wali likhai - اردو) mein likho. KABHI BHI Roman Urdu (English alphabets) ya Hindi (Devanagari) use mat karna.
-  2. Agar kisi word ka tarjuma nahi milta, to usko wesa hi chhor do.
-  3. Koi wazahat (explanation) mat likho, sirf translated text do.
+  1. IF TARGET IS ENGLISH: Write ONLY in English (Latin alphabet). NEVER output Urdu (Arabic script) or Hindi (Devanagari script) characters.
+  2. IF TARGET IS URDU: Write ONLY in Urdu script (Arabic alphabet). NEVER output Roman Urdu or Hindi.
+  3. If the text is complete gibberish (OCR error), just output " ". Do not try to translate gibberish.
+  4. Do not add any explanations, just the translated text.
   
   Text to translate:
   ${text}`;
 
   let body = {
     contents: [{parts: [{text: prompt}]}],
-    generationConfig: {temperature: 0.0, maxOutputTokens: 8000}
+    generationConfig: {temperature: 0.1, maxOutputTokens: 8000}
   };
 
   for(let i=0; i<retries; i++) {
@@ -400,18 +403,24 @@ async function geminiTranslateOne(text, target, retries = 3){
       if (!r.ok) {
         let msg = (j.error && j.error.message) || 'API Error';
         if (msg.includes('503') || msg.includes('high demand')) {
-           document.getElementById('geminiStatus').textContent = `⚠️ Google busy hai. Retrying (${i+1}/${retries})...`;
-           await sleep(5000);
-           continue; // Retry
+           document.getElementById('geminiStatus').textContent = `⚠️ Google busy. Retrying (${i+1}/${retries})...`;
+           await sleep(4000);
+           continue; 
         }
-        if (msg.includes('429') || msg.toLowerCase().includes('quota')) {
-            throw new Error('Quota Exceeded. Please wait.');
-        }
+        if (msg.includes('429') || msg.toLowerCase().includes('quota')) throw new Error('Quota Exceeded');
         throw new Error(msg);
       }
       
       let out = j.candidates[0].content.parts.map(p => p.text || '').join('');
-      return sanitizeOutput(out, target);
+      
+      // STRICT LANGUAGE CHECK (Agar AI ne galat language likhi to retry karo)
+      try {
+          return sanitizeOutput(out, target);
+      } catch (sanitizeError) {
+          document.getElementById('geminiStatus').textContent = `⚠️ ${sanitizeError.message}`;
+          await sleep(2000);
+          continue; // retry loop
+      }
       
     } catch(e) {
       if(i === retries - 1) throw e;
@@ -437,8 +446,12 @@ async function translateWithGemini(){
       if(!ch.pagesText) continue;
       let outPages = [];
       for(let pi = 0; pi < ch.pagesText.length; pi++){
-        let rawText = cleanOCRText(ch.pagesText[pi]);
-        if(!rawText.trim()) { outPages.push(''); donePages++; continue; }
+        let rawText = ch.pagesText[pi];
+        if(!rawText || !rawText.trim()) { 
+            outPages.push('(OCR failed on this page)'); 
+            donePages++; 
+            continue; 
+        }
         
         document.getElementById('geminiStatus').textContent = `🤖 Translating: ${ch.title} (Page ${pi+1}/${ch.pagesText.length})`;
         
@@ -447,7 +460,7 @@ async function translateWithGemini(){
         donePages++;
         updateProgress('trans', (donePages / totalPages) * 100);
         
-        await sleep(2000); // 2s delay to avoid hitting rate limits
+        await sleep(2000);
       }
       ch.translatedPages = outPages;
     }
@@ -509,7 +522,7 @@ function syncedPage(d){
 }
 
 // ==========================================
-// BOOK ASSEMBLER (UNIVERSAL LANGUAGE FIX)
+// BOOK ASSEMBLER (UNIVERSAL LANGUAGE)
 // ==========================================
 async function ensureUrduFont(){
   try{
