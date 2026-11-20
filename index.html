@@ -1,662 +1,324 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PDF Book Assembler PRO - V57.9 (Strict Target Language)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Universal AI PDF Book Translator</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-body{font-family:Inter,system-ui}
-.card{background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:16px}
-.chapterRow{border:1px solid #e2e8f0;border-radius:12px;padding:10px;background:#f8fafc;transition:all 0.2s;}
-.chapterRow:hover{border-color:#cbd5e1;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
-.chapterRow.done{border-color:#22c55e;background:#f0fdf4}
-.chapNum{width:36px;height:36px;min-width:36px;border-radius:10px;background:linear-gradient(135deg,#4f46e5,#a855f7);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
-#fileList{max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-.flexBox{resize:vertical;overflow:auto;min-height:120px;height:120px}
-.rtl-text{direction:rtl;text-align:right;font-family:'Noto Nastaliq Urdu',serif}
-.ltr-text{direction:ltr;text-align:left;font-family:Georgia,serif}
-.progress-container{width:100%;background:#e2e8f0;border-radius:9999px;height:8px;overflow:hidden;margin-top:6px}
-.progress-bar{height:100%;background:#4f46e5;width:0%;transition:width 0.3s}
-.progress-text{font-size:11px;color:#64748b;margin-top:4px;text-align:right;font-weight:bold}
+*{box-sizing:border-box} body{font-family:Inter,"Noto Sans",system-ui,sans-serif}
+.card{background:white;border:1px solid #e2e8f0;border-radius:16px;padding:16px;box-shadow:0 5px 22px rgba(15,23,42,.05)}
+.progress{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden}.bar{height:100%;width:0;background:#4f46e5;transition:width .25s}
+#translatedPreview{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;min-height:330px;max-height:560px;overflow:auto}
+.rtl{direction:rtl;text-align:right;font-family:"Noto Sans Arabic","Noto Sans",sans-serif}
+.ltr{direction:ltr;text-align:left;font-family:"Noto Sans",sans-serif}
+button:disabled{opacity:.45;cursor:not-allowed}
 </style>
 </head>
-<body class="bg-slate-100 min-h-screen">
-
-<header class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 sticky top-0 z-10 shadow-md">
-  <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <div>
-      <h1 class="text-xl font-extrabold">📚 PDF Book Assembler PRO</h1>
-      <p class="text-xs opacity-90">V57.9 — Strict Target Language Fix</p>
-    </div>
-    <button onclick="alert('API Key ab Cloudflare Worker mein safe hai.')" class="bg-black/30 hover:bg-black/50 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
-      🔒 Owner Info
-    </button>
+<body class="bg-slate-100 min-h-screen text-slate-800">
+<header class="bg-gradient-to-r from-indigo-700 via-violet-700 to-fuchsia-700 text-white p-5 shadow-lg">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-2xl font-extrabold">📚 Universal AI PDF Book Translator</h1>
+    <p class="text-sm opacity-90 mt-1">Direct Gemini PDF reading · OCR engine not required · Page-by-page translation</p>
   </div>
 </header>
+<main class="max-w-7xl mx-auto p-4 space-y-4">
+  <section class="card">
+    <h2 class="font-bold text-lg mb-3">1. Add PDF books / chapters</h2>
+    <input id="pdfInput" type="file" accept="application/pdf,.pdf" multiple class="w-full border-2 border-dashed rounded-xl p-4 bg-slate-50">
+    <div id="fileList" class="mt-3 space-y-2 text-sm"><p class="text-slate-400">No PDF files added yet.</p></div>
+    <p class="text-xs text-slate-500 mt-3">PDF pages are sent to Gemini as PDF data. Tesseract OCR is not used. Large books are processed one page at a time to keep page order and reduce request size.</p>
+  </section>
 
-<main class="max-w-6xl mx-auto p-4 space-y-4">
-
-  <!-- Settings row -->
-  <div class="bg-white rounded-xl p-3 border flex flex-wrap gap-4 items-center text-sm shadow-sm">
-    <b>⚙️ OCR Settings:</b>
-    <div class="flex items-center gap-2">
-      <label>Language:</label>
-      <select id="ocrLang" class="border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300">
-        <option value="urd">Urdu Only</option>
-        <option value="eng">English Only</option>
-        <option value="urd+eng">Urdu + English</option>
-      </select>
-    </div>
-    <div class="flex items-center gap-2">
-      <label>Quality:</label>
-      <select id="ocrQuality" class="border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300">
-        <option value="2" selected>High</option>
-        <option value="1.5">Medium</option>
-        <option value="1.2">Fast</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Card 1: Add files & Chapter List -->
-  <div class="card">
-    <div class="flex justify-between items-center mb-3">
-      <h2 class="font-bold text-lg">1️⃣ Add PDF Files (Chapters)</h2>
-      <button onclick="runFullOCR()" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition">⚡ OCR All Files</button>
-    </div>
-    <input id="pdfInput" type="file" accept="application/pdf" multiple class="w-full border border-dashed border-slate-300 p-3 rounded-lg bg-slate-50 cursor-pointer hover:bg-slate-100 transition">
-    
-    <div id="fileList" class="mt-4"></div>
-    
-    <div class="mt-2 hidden" id="ocrProgressContainer">
-      <div class="progress-container"><div id="ocrProgressBar" class="progress-bar bg-amber-500"></div></div>
-      <div id="ocrProgressText" class="progress-text text-left">0%</div>
-    </div>
-    <div id="ocrStatus" class="text-xs mt-2 text-slate-500"></div>
-  </div>
-
-  <div class="grid md:grid-cols-2 gap-4">
-    <!-- Card 2: Translation & AI -->
-    <div class="card flex flex-col">
-      <h2 class="font-bold text-lg mb-2">2️⃣ AI Translation</h2>
-      
-      <div class="flex gap-2 mb-3">
-        <button onclick="translateWithGemini()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold transition shadow-sm">🤖 Translate All</button>
-        <button onclick="resetTranslationProgress()" class="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-2 rounded-lg font-bold transition">Reset</button>
+  <section class="grid lg:grid-cols-2 gap-4">
+    <div class="card space-y-3">
+      <h2 class="font-bold text-lg">2. Translation settings</h2>
+      <div>
+        <label class="text-sm font-semibold block mb-1" for="targetLang">Target language</label>
+        <input id="targetLang" list="languageOptions" value="Urdu" placeholder="Type any language name" class="w-full border rounded-lg p-2.5">
+        <datalist id="languageOptions">
+          <option value="English"><option value="Urdu"><option value="Roman Urdu"><option value="Arabic"><option value="Hindi"><option value="Persian"><option value="French"><option value="Spanish"><option value="German"><option value="Chinese (Simplified)"><option value="Chinese (Traditional)"><option value="Japanese"><option value="Korean"><option value="Portuguese"><option value="Russian"><option value="Bengali"><option value="Turkish"><option value="Italian"><option value="Dutch"><option value="Pashto"><option value="Punjabi"><option value="Indonesian"><option value="Malay"><option value="Thai"><option value="Vietnamese"><option value="Hebrew"><option value="Greek"><option value="Swahili">
+        </datalist>
       </div>
+      <div>
+        <label class="text-sm font-semibold block mb-1" for="model">Gemini model</label>
+        <select id="model" class="w-full border rounded-lg p-2.5">
+          <option value="gemini-3.5-flash-lite" selected>Gemini 3.5 Flash Lite (Worker default)</option>
+          <option value="gemini-3.0-flash">Gemini 3.0 Flash</option>
+          <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
+        </select>
+        <p class="text-xs text-slate-500 mt-1">Only models already allowed by your Cloudflare Worker are listed.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button id="translateBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-5 py-3 font-bold flex-1">🤖 Translate all pages</button>
+        <button id="stopBtn" class="bg-rose-100 text-rose-700 rounded-lg px-4 py-3 font-bold" disabled>Stop</button>
+      </div>
+      <div class="progress"><div id="translateBar" class="bar bg-emerald-600"></div></div>
+      <div id="progressText" class="text-xs text-slate-500 text-right">0%</div>
+      <div id="status" class="text-sm rounded-lg bg-slate-50 p-3" role="status">Ready. Add a PDF and choose a target language.</div>
+      <div class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <b>Accuracy note:</b> AI translation cannot be guaranteed 100% error-free for every language, handwriting, or poor-quality scan. The prompt asks Gemini to check completeness and preserve names, numbers, tables, and meaning. Always review important legal, medical, or technical translations.
+      </div>
+    </div>
 
-      <div class="progress-container"><div id="transProgressBar" class="progress-bar bg-emerald-500"></div></div>
-      <div id="transProgressText" class="progress-text">0%</div>
-      <div id="geminiStatus" class="text-xs mt-1 text-slate-600 bg-slate-50 p-2 rounded"></div>
-      
-      <div class="mt-4 flex-1 flex flex-col">
-        <div class="flex justify-between items-center mb-1">
-          <label class="text-xs font-bold text-slate-600">Translation Preview</label>
-          <div class="flex gap-1 items-center text-xs">
-            <button onclick="syncedPage(-1)" class="bg-slate-200 px-2 py-0.5 rounded hover:bg-slate-300">◀</button>
-            <span id="previewPageLabel" class="font-mono">1 / 1</span>
-            <button onclick="syncedPage(1)" class="bg-slate-200 px-2 py-0.5 rounded hover:bg-slate-300">▶</button>
+    <div class="card space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="font-bold text-lg">3. Synchronized page preview</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <button id="prevPage" class="px-3 py-1.5 bg-slate-200 rounded-lg" disabled>◀</button>
+          <span id="pageLabel" class="font-mono">0 / 0</span>
+          <button id="nextPage" class="px-3 py-1.5 bg-slate-200 rounded-lg" disabled>▶</button>
+        </div>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div>
+          <div class="text-xs font-bold text-slate-500 mb-1">ORIGINAL PDF PAGE</div>
+          <div class="border rounded-lg bg-slate-100 p-2 min-h-64 flex items-center justify-center overflow-auto">
+            <canvas id="originalCanvas" class="max-w-full h-auto shadow-sm"></canvas>
           </div>
         </div>
-        <div id="translatedBookView" class="flexBox w-full border p-3 rounded-lg bg-slate-50 text-[14px] leading-7 whitespace-pre-wrap overflow-y-auto"></div>
+        <div>
+          <div class="text-xs font-bold text-slate-500 mb-1">AI TRANSLATION</div>
+          <div id="translatedPreview" class="border rounded-lg bg-white p-3 text-sm ltr">(Translation will appear here.)</div>
+        </div>
       </div>
+      <div id="pageStatus" class="text-xs text-slate-500">Select a page after adding a PDF.</div>
     </div>
+  </section>
 
-    <!-- Card 3: Book Assembler -->
-    <div class="card flex flex-col">
-      <h2 class="font-bold text-lg mb-2">3️⃣ Book Assembler</h2>
-      
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs font-bold text-slate-600 mb-1 block">Book Name</label>
-          <input id="bookName" value="The Last Protector" class="w-full border p-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300">
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-600 mb-1 block">Target Language</label>
-          <select id="targetLang" class="w-full border p-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300">
-            <option value="en" selected>English</option>
-            <option value="ur">Urdu - اردو</option>
-            <option value="roman">Roman Urdu</option>
-            <option value="ar">Arabic - العربية</option>
-            <option value="hi">Hindi - हिन्दी</option>
-            <option value="fr">French - Français</option>
-            <option value="es">Spanish - Español</option>
-            <option value="zh">Chinese - 中文</option>
-            <option value="ja">Japanese - 日本語</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-600 mb-1 block">Book Mode</label>
-          <select id="bookMode" class="w-full border p-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-300">
-            <option value="both">Original + Translated</option>
-            <option value="translated">Only Translated</option>
-            <option value="original">Only Original</option>
-          </select>
-        </div>
-      </div>
-
-      <button onclick="makeBook()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold mt-4 shadow-md transition text-lg">📖 Generate Book</button>
-      
-      <div class="mt-3">
-        <div class="progress-container"><div id="bookProgressBar" class="progress-bar"></div></div>
-        <div id="bookProgressText" class="progress-text">0%</div>
-      </div>
-      
-      <div id="status" class="text-sm mt-2 text-slate-600 bg-slate-50 p-2 rounded text-center font-bold">Ready</div>
-      <div id="downloadArea" class="mt-3"></div>
+  <section class="card space-y-3">
+    <h2 class="font-bold text-lg">4. Generate translated book</h2>
+    <div class="grid md:grid-cols-3 gap-3">
+      <div><label class="text-sm font-semibold block mb-1" for="bookName">Book name</label><input id="bookName" value="Translated Book" class="w-full border rounded-lg p-2.5"></div>
+      <div><label class="text-sm font-semibold block mb-1" for="bookMode">Book contents</label><select id="bookMode" class="w-full border rounded-lg p-2.5"><option value="both">Original + translated pages</option><option value="translated">Translated pages only</option><option value="original">Original PDF only</option></select></div>
+      <div class="flex items-end"><button id="makeBookBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg p-3 font-bold">📖 Generate PDF book</button></div>
     </div>
-  </div>
-
+    <div id="bookStatus" class="text-sm text-slate-500">Translation is required before generating translated pages.</div>
+    <div id="downloadArea"></div>
+  </section>
 </main>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const WORKER_URL='https://gemini-proxy.uvstorynet.workers.dev';
+const $=id=>document.getElementById(id);
+let chapters=[], allPages=[], currentPage=0, busy=false, stopRequested=false;
 
-const WORKER_URL = 'https://gemini-proxy.uvstorynet.workers.dev'; 
-
-let chapters = [];
-let _busy = false;
-let _syncedPageIdx = 0;
-let _ocrPages = [];
-let _transPagesSync = [];
-let _tesseractWorker = null;
-
-// ==========================================
-// HELPERS & GARBAGE FILTER
-// ==========================================
-function stripInvisible(s){ return s ? String(s).replace(/[\u200B-\u200F\u202A-\u202E\uFEFF\u00AD]/g,'') : ''; }
-function updateProgress(p, pc){
-  let b = document.getElementById(p+'ProgressBar');
-  let t = document.getElementById(p+'ProgressText');
-  if(b) b.style.width = Math.min(100, Math.max(0, pc)) + '%';
-  if(t) t.textContent = Math.round(pc) + '%';
+function setStatus(msg){$('status').textContent=msg}
+function updateProgress(done,total){
+  const p=total?Math.round(done/total*100):0;
+  $('translateBar').style.width=p+'%'; $('progressText').textContent=p+'%';
 }
-
-function cleanOCRText(t){
-  if(!t) return '';
-  let lines = String(t).split('\n'), out = [], cur = '';
-  for(let ln of lines){
-    let x = ln.trim();
-    if(!x){ if(cur){ out.push(cur); cur = ''; } continue; }
-    if(cur && (cur.endsWith('.')||cur.endsWith('?')||cur.endsWith('!')||cur.endsWith('۔'))){ out.push(cur); cur = x; }
-    else cur = cur ? cur + ' ' + x : x;
-  }
-  if(cur) out.push(cur);
-  
-  // Garbage Filter: Remove lines repeating more than 3 times
-  let linesArray = out.join('\n\n').split('\n\n');
-  let uniqueLines = [];
-  let seen = {};
-  for (let line of linesArray) {
-      let cleanLine = line.trim();
-      if (!cleanLine || cleanLine.split(/\s+/).length < 3) continue;
-      if (seen[cleanLine]) seen[cleanLine]++;
-      else { seen[cleanLine] = 1; uniqueLines.push(cleanLine); }
-  }
-  let finalClean = uniqueLines.filter(line => seen[line] <= 3);
-  return finalClean.join('\n\n');
+function rebuildPages(){
+  allPages=[];
+  chapters.forEach((ch,ci)=>ch.pages.forEach((p,pi)=>allPages.push({chapterIndex:ci,pageIndex:pi,chapter:ch})));
+  currentPage=Math.min(currentPage,Math.max(0,allPages.length-1));
+  renderPage();
 }
-
-// ==========================================
-// STRICT LANGUAGE SANITIZER
-// ==========================================
-function sanitizeOutput(text, targetLang) {
-    if (!text) return "";
-    
-    // STRICT ENGLISH CHECK
-    if (targetLang === 'en') {
-        // Agar AI ne ghalti se Urdu ya Hindi likh di hai, to error throw karo taake dobara try ho
-        let urduChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
-        let hindiChars = (text.match(/[\u0900-\u097F]/g) || []).length;
-        
-        if ((urduChars > 10 || hindiChars > 10) && (urduChars + hindiChars) > text.length * 0.1) {
-            throw new Error("AI ne Urdu/Hindi mein likha hai. Dobara English mein translate kiya ja raha hai...");
-        }
-        // Remove any leftover Urdu/Hindi
-        return text.replace(/[\u0600-\u06FF\u0900-\u097F]+/g, '');
-    }
-    
-    // STRICT URDU CHECK
-    if (targetLang === 'ur') {
-        text = text.replace(/[\u0900-\u097F]+/g, '');
-        
-        let urduChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
-        let engChars = (text.match(/[A-Za-z]/g) || []).length;
-        
-        if (engChars > urduChars * 1.5 && engChars > 20) {
-            throw new Error("AI ne Roman Urdu mein likha hai. Dobara Urdu mein translate kiya ja raha hai...");
-        }
-        
-        let lines = text.split('\n');
-        let cleanLines = [];
-        for (let line of lines) {
-            let words = line.trim().split(/\s+/);
-            let engWords = words.filter(w => /^[A-Za-z]+$/.test(w)).length;
-            if (words.length > 0 && engWords / words.length > 0.8 && words.length < 10) continue; 
-            cleanLines.push(line);
-        }
-        return cleanLines.join('\n');
-    }
-    
-    return text;
-}
-
-// ==========================================
-// FILE INPUT & UI RENDER
-// ==========================================
-document.getElementById('pdfInput').addEventListener('change', async e => {
-  let files = Array.from(e.target.files);
-  for(let f of files){
-    let buf = await f.arrayBuffer();
-    let pdf = await pdfjsLib.getDocument({data: buf}).promise;
-    chapters.push({
-      file: f,
-      title: f.name.replace(/\.pdf$/i, ''),
-      pages: pdf.numPages,
-      text: '',
-      pagesText: [],
-      ocrDone: false,
-      translatedPages: null
-    });
-  }
-  renderChapters();
-});
-
-function renderChapters(){
-  let list = document.getElementById('fileList');
-  if(!chapters.length){ list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No files added yet.</p>'; return; }
-  list.innerHTML = '';
-  chapters.forEach((ch, i) => {
-    let div = document.createElement('div');
-    div.className = 'chapterRow ' + (ch.ocrDone ? 'done' : '');
-    div.innerHTML = `
-      <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 overflow-hidden">
-          <div class="chapNum">${i+1}</div>
-          <div class="truncate">
-            <b class="text-sm text-slate-800 truncate block">${ch.title}</b>
-            <p class="text-[10px] text-slate-500">${ch.pages} pages | ${ch.ocrDone ? '✅ OCR Done' : '⏳ Pending'}</p>
-          </div>
-        </div>
-        <div class="flex gap-1 shrink-0">
-          <button onclick="runFullOCR(${i})" class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-2 py-1 rounded text-xs font-bold transition whitespace-nowrap" title="Extract Text from this PDF">⚡ OCR</button>
-          <button onclick="removeChapter(${i})" class="bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-bold transition">✕</button>
-        </div>
-      </div>`;
-    list.appendChild(div);
+function renderFileList(){
+  const box=$('fileList'); box.innerHTML='';
+  if(!chapters.length){box.innerHTML='<p class="text-slate-400">No PDF files added yet.</p>';return}
+  chapters.forEach((ch,i)=>{
+    const row=document.createElement('div'); row.className='flex items-center justify-between gap-3 border rounded-lg p-3 bg-slate-50';
+    const left=document.createElement('div'); left.className='min-w-0';
+    const name=document.createElement('div'); name.className='font-semibold truncate'; name.textContent=ch.name;
+    const meta=document.createElement('div'); meta.className='text-xs text-slate-500'; meta.textContent=ch.pages.length+' pages · '+ch.pages.filter(p=>p.translation).length+' translated';
+    left.append(name,meta);
+    const remove=document.createElement('button'); remove.textContent='Remove'; remove.className='text-rose-600 text-xs font-bold'; remove.disabled=busy;
+    remove.onclick=()=>{chapters.splice(i,1);renderFileList();rebuildPages()};
+    row.append(left,remove);box.append(row);
   });
 }
-function removeChapter(idx){
-  chapters.splice(idx, 1);
-  renderChapters();
-  rebuildSyncedPages();
-}
-
-// ==========================================
-// OCR ENGINE
-// ==========================================
-async function getTesseractWorker(){
-  if(_tesseractWorker) return _tesseractWorker;
-  let lang = document.getElementById('ocrLang').value;
-  _tesseractWorker = await Tesseract.createWorker(lang, 1, { logger: m => {} });
-  return _tesseractWorker;
-}
-
-async function runFullOCR(onlyIdx = null){
-  if(_busy) return alert('Process busy hai, thora intezar karein.');
-  let indices = onlyIdx !== null ? [onlyIdx] : chapters.map((_, i) => i).filter(i => !chapters[i].ocrDone);
-  
-  if(!indices.length) return alert('Sab files ka OCR pehle hi ho chuka hai.');
-  
-  _busy = true;
-  document.getElementById('ocrProgressContainer').classList.remove('hidden');
-  updateProgress('ocr', 0);
-  
-  let totalPages = indices.reduce((s, i) => s + chapters[i].pages, 0);
-  let donePages = 0;
-
-  for(let idx of indices){
-    let ch = chapters[idx];
-    let buf = await ch.file.arrayBuffer();
-    let pdf = await pdfjsLib.getDocument({data: buf}).promise;
-    let pagesText = [];
-    let scale = parseFloat(document.getElementById('ocrQuality').value);
-    let worker = null;
-
-    for(let p = 1; p <= pdf.numPages; p++){
-      let page = await pdf.getPage(p);
-      let pageTxt = '';
-      
-      try{
-        let tc = await page.getTextContent();
-        let t = tc.items.map(x => x.str).join(' ');
-        if(t.trim().length > 50) pageTxt = stripInvisible(t);
-      }catch(e){}
-
-      if(!pageTxt){
-        if(!worker) worker = await getTesseractWorker();
-        let vp = page.getViewport({scale: scale});
-        let c = document.createElement('canvas');
-        c.width = vp.width; c.height = vp.height;
-        let ctx = c.getContext('2d', {willReadFrequently: true});
-        await page.render({canvasContext: ctx, viewport: vp}).promise;
-        try{
-          let ret = await worker.recognize(c);
-          pageTxt = stripInvisible(ret.data.text || '');
-        }catch(e){}
-      }
-      
-      let cleaned = cleanOCRText(pageTxt);
-      pagesText.push(cleaned);
-      donePages++;
-      updateProgress('ocr', (donePages / totalPages) * 100);
-      document.getElementById('ocrStatus').textContent = `Extracting: ${ch.title} (Page ${p}/${pdf.numPages})`;
-    }
-    
-    ch.pagesText = pagesText;
-    ch.text = pagesText.join('\n\n--- Page Break ---\n\n');
-    ch.ocrDone = true;
-    renderChapters();
+async function addFiles(files){
+  for(const file of files){
+    if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf'))continue;
+    try{
+      const bytes=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
+      const pages=Array.from({length:pdf.numPages},()=>({translation:'',state:'pending'}));
+      chapters.push({name:file.name,file,bytes,pdf,pages});
+    }catch(e){alert('Could not open '+file.name+': '+e.message)}
   }
-
-  _busy = false;
-  document.getElementById('ocrStatus').textContent = '✅ OCR Completed!';
-  rebuildSyncedPages();
-  setTimeout(()=>document.getElementById('ocrProgressContainer').classList.add('hidden'), 2000);
+  renderFileList();rebuildPages();
 }
+$('pdfInput').addEventListener('change',e=>addFiles(Array.from(e.target.files||[])));
 
-// ==========================================
-// AI TRANSLATION (VIA CLOUDFLARE WORKER)
-// ==========================================
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function pageAsPdfBase64(chapter,pageIndex){
+  const source=await PDFLib.PDFDocument.load(chapter.bytes);
+  const one=await PDFLib.PDFDocument.create();
+  const [page]=await one.copyPages(source,[pageIndex]);
+  one.addPage(page);
+  const bytes=await one.save({useObjectStreams:true});
+  let binary='';
+  const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,Math.min(i+chunk,bytes.length)));
+  return btoa(binary);
+}
+function extractGeminiText(data){
+  const parts=data?.candidates?.[0]?.content?.parts||[];
+  return parts.map(p=>p.text||'').join('').trim();
+}
+async function callGeminiPdf(chapter,pageIndex,target,model){
+  const pdfBase64=await pageAsPdfBase64(chapter,pageIndex);
+  const prompt=`You are an expert professional human-level document translator. Read the attached ONE-PAGE PDF visually and understand all visible content before translating it.
 
-async function geminiTranslateOne(text, target, retries = 3){
-  let prompt = `You are a professional translator. Translate the following text STRICTLY and ONLY into "${target}". 
-  RULES:
-  1. IF TARGET IS ENGLISH: Write ONLY in English (Latin alphabet). NEVER output Urdu (Arabic script) or Hindi (Devanagari script) characters.
-  2. IF TARGET IS URDU: Write ONLY in Urdu script (Arabic alphabet). NEVER output Roman Urdu or Hindi.
-  3. If the text is complete gibberish (OCR error), just output " ". Do not try to translate gibberish.
-  4. Do not add any explanations, just the translated text.
-  
-  Text to translate:
-  ${text}`;
+TASK:
+Translate every readable piece of meaningful text on this page into: ${target}.
+The source language is automatic: identify it yourself. The target language is exactly "${target}".
 
-  let body = {
-    contents: [{parts: [{text: prompt}]}],
-    generationConfig: {temperature: 0.1, maxOutputTokens: 8000}
+STRICT REQUIREMENTS:
+1. Translate the complete page. Do not omit headings, paragraphs, captions, labels, footnotes, table cells, or text embedded in images if readable.
+2. Preserve meaning, context, paragraph order, names, numbers, dates, units, formulas, references, and list numbering.
+3. Do not summarize, shorten, explain, add facts, or invent text.
+4. Keep names and technical terms consistent. Translate naturally, not word-for-word when that would distort meaning.
+5. If the target is Urdu, use Urdu script. If the target is Roman Urdu, use Latin/Roman script. Follow the requested writing system for all other languages.
+6. Preserve a readable structure using paragraphs, headings, lists, and simple text tables where possible.
+7. If a small area is genuinely unreadable, write [unreadable text] at the relevant position instead of guessing. If the page contains no readable text, return [No readable text on this page].
+8. Before responding, silently compare your translation against the entire page and check for missing content, wrong numbers, or untranslated passages. Correct any issues you find.
+9. Output ONLY the final translated page text. Do not include commentary or a language-detection report.`;
+  const payload={
+    model,
+    contents:[{role:'user',parts:[
+      {text:prompt},
+      {inline_data:{mime_type:'application/pdf',data:pdfBase64}}
+    ]}],
+    generationConfig:{temperature:0.1,maxOutputTokens:8192}
   };
-
-  for(let i=0; i<retries; i++) {
-    try {
-      let r = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-      });
-      
-      let j = await r.json();
-      
-      if (!r.ok) {
-        let msg = (j.error && j.error.message) || 'API Error';
-        if (msg.includes('503') || msg.includes('high demand')) {
-           document.getElementById('geminiStatus').textContent = `⚠️ Google busy. Retrying (${i+1}/${retries})...`;
-           await sleep(4000);
-           continue; 
-        }
-        if (msg.includes('429') || msg.toLowerCase().includes('quota')) throw new Error('Quota Exceeded');
-        throw new Error(msg);
-      }
-      
-      let out = j.candidates[0].content.parts.map(p => p.text || '').join('');
-      
-      // STRICT LANGUAGE CHECK (Agar AI ne galat language likhi to retry karo)
-      try {
-          return sanitizeOutput(out, target);
-      } catch (sanitizeError) {
-          document.getElementById('geminiStatus').textContent = `⚠️ ${sanitizeError.message}`;
-          await sleep(2000);
-          continue; // retry loop
-      }
-      
-    } catch(e) {
-      if(i === retries - 1) throw e;
-      await sleep(3000);
-    }
-  }
+  const response=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(result?.error?.message||result?.error||('Worker/API error '+response.status));
+  const text=extractGeminiText(result);
+  if(!text)throw new Error('Gemini returned no translation text. Check model availability and Worker response.');
+  return text;
 }
-
-async function translateWithGemini(){
-  if(_busy) return alert('Process busy hai.');
-  if(!chapters.length) return alert('Pehle PDF add karein.');
-  if(!chapters.some(c => c.ocrDone)) return alert('Pehle OCR (text extract) karein.');
-  
-  let target = document.getElementById('targetLang').value;
-  _busy = true;
-  updateProgress('trans', 0);
-  
-  let totalPages = chapters.reduce((a, ch) => a + (ch.pagesText||[]).length, 0);
-  let donePages = 0;
-
-  try {
-    for(let ch of chapters){
-      if(!ch.pagesText) continue;
-      let outPages = [];
-      for(let pi = 0; pi < ch.pagesText.length; pi++){
-        let rawText = ch.pagesText[pi];
-        if(!rawText || !rawText.trim()) { 
-            outPages.push('(OCR failed on this page)'); 
-            donePages++; 
-            continue; 
-        }
-        
-        document.getElementById('geminiStatus').textContent = `🤖 Translating: ${ch.title} (Page ${pi+1}/${ch.pagesText.length})`;
-        
-        let translated = await geminiTranslateOne(rawText, target);
-        outPages.push(translated);
-        donePages++;
-        updateProgress('trans', (donePages / totalPages) * 100);
-        
-        await sleep(2000);
-      }
-      ch.translatedPages = outPages;
-    }
-    document.getElementById('geminiStatus').textContent = '✅ Translation Complete!';
-    rebuildSyncedPages();
-  } catch(e) {
-    document.getElementById('geminiStatus').textContent = '❌ Error: ' + e.message;
-    alert('Translation Error: ' + e.message);
-  }
-  
-  _busy = false;
+async function renderPage(){
+  $('pageLabel').textContent=allPages.length?(currentPage+1)+' / '+allPages.length:'0 / 0';
+  $('prevPage').disabled=!allPages.length||currentPage===0;
+  $('nextPage').disabled=!allPages.length||currentPage>=allPages.length-1;
+  const canvas=$('originalCanvas'),ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!allPages.length){canvas.width=1;canvas.height=1;$('translatedPreview').textContent='(Translation will appear here.)';$('pageStatus').textContent='Select a page after adding a PDF.';return}
+  const item=allPages[currentPage],page=await item.chapter.pdf.getPage(item.pageIndex+1);
+  const viewport=page.getViewport({scale:1.15});canvas.width=viewport.width;canvas.height=viewport.height;
+  await page.render({canvasContext:ctx,viewport}).promise;
+  const translation=item.chapter.pages[item.pageIndex].translation;
+  const target=$('targetLang').value.trim();
+  const rtl=/^(urdu|arabic|persian|hebrew|pashto)(\b|$)/i.test(target);
+  $('translatedPreview').className='border rounded-lg bg-white p-3 text-sm '+(rtl?'rtl':'ltr');
+  $('translatedPreview').textContent=translation||'(This page has not been translated yet.)';
+  $('pageStatus').textContent=item.chapter.name+' · Original page '+(item.pageIndex+1)+' · '+(translation?'Translation ready':'Waiting for translation');
 }
+$('prevPage').onclick=()=>{if(currentPage>0){currentPage--;renderPage()}};
+$('nextPage').onclick=()=>{if(currentPage<allPages.length-1){currentPage++;renderPage()}};
 
-function resetTranslationProgress(){
-  if(!confirm('Translation reset karni hai?')) return;
-  chapters.forEach(ch => ch.translatedPages = null);
-  rebuildSyncedPages();
-  updateProgress('trans', 0);
-}
-
-// ==========================================
-// PREVIEW SYNC
-// ==========================================
-function rebuildSyncedPages(){
-  _ocrPages = [];
-  _transPagesSync = [];
-  chapters.forEach((ch) => {
-    let op = ch.pagesText || [], tp = ch.translatedPages || [];
-    let n = Math.max(op.length, tp.length, 1);
-    for(let pi = 0; pi < n; pi++){
-      _ocrPages.push({text: op[pi] || ''});
-      _transPagesSync.push({text: tp[pi] || ''});
-    }
-  });
-  _syncedPageIdx = Math.min(_syncedPageIdx, Math.max(0, _ocrPages.length - 1));
-  renderSyncedPage();
-}
-function renderSyncedPage(){
-  let dv = document.getElementById('translatedBookView');
-  let lb = document.getElementById('previewPageLabel');
-  if(!_ocrPages.length){
-    dv.textContent = 'Pehle OCR aur Translate karein.';
-    lb.textContent = '0 / 0';
-    return;
-  }
-  let cur = _transPagesSync[_syncedPageIdx] || {text: ''};
-  dv.textContent = cur.text || '(Translation khali hai)';
-  
-  let tgt = document.getElementById('targetLang').value;
-  let rtl = (tgt === 'ur' || tgt === 'ar');
-  dv.dir = rtl ? 'rtl' : 'ltr';
-  dv.className = 'flexBox w-full border p-3 rounded-lg bg-white text-[14px] leading-7 whitespace-pre-wrap ' + (rtl ? 'rtl-text' : 'ltr-text');
-  
-  lb.textContent = `${_syncedPageIdx+1} / ${_ocrPages.length}`;
-}
-function syncedPage(d){
-  _syncedPageIdx = Math.max(0, Math.min(_ocrPages.length - 1, _syncedPageIdx + d));
-  renderSyncedPage();
-}
-
-// ==========================================
-// BOOK ASSEMBLER (UNIVERSAL LANGUAGE)
-// ==========================================
-async function ensureUrduFont(){
+$('translateBtn').onclick=async()=>{
+  if(busy)return;
+  if(!chapters.length)return alert('Please add at least one PDF.');
+  const target=$('targetLang').value.trim();
+  if(!target)return alert('Enter a target language.');
+  const model=$('model').value;
+  const queue=[];
+  chapters.forEach(ch=>ch.pages.forEach((p,pi)=>{if(!p.translation)queue.push({ch,pi})}));
+  if(!queue.length)return setStatus('All pages already have translations.');
+  busy=true;stopRequested=false;$('translateBtn').disabled=true;$('stopBtn').disabled=false;
+  let done=0;updateProgress(0,queue.length);
   try{
-    await document.fonts.load('700 32px "Noto Nastaliq Urdu"');
-    await document.fonts.load('400 32px "Noto Nastaliq Urdu"');
-    await document.fonts.ready;
-  }catch(e){}
-}
+    for(const task of queue){
+      if(stopRequested)break;
+      const {ch,pi}=task;const page=ch.pages[pi];page.state='processing';
+      setStatus('Gemini is reading and translating '+ch.name+' — page '+(pi+1)+' ('+(done+1)+'/'+queue.length+')');
+      try{
+        page.translation=await callGeminiPdf(ch,pi,target,model);page.state='done';
+      }catch(err){page.state='error';page.translation='';throw new Error(ch.name+' — page '+(pi+1)+': '+err.message)}
+      done++;updateProgress(done,queue.length);renderFileList();
+      const globalIndex=allPages.findIndex(x=>x.chapter===ch&&x.pageIndex===pi);
+      if(globalIndex>=0&&globalIndex===currentPage)await renderPage();
+    }
+    if(stopRequested)setStatus('Stopped. Completed translations have been kept; press Translate all pages to continue.');
+    else setStatus('Translation complete. '+done+' page(s) translated. Review the pages before generating the book.');
+  }catch(err){setStatus('Translation error: '+err.message);alert(err.message)}
+  finally{busy=false;$('translateBtn').disabled=false;$('stopBtn').disabled=true;renderFileList();renderPage()}
+};
+$('stopBtn').onclick=()=>{stopRequested=true;$('stopBtn').disabled=true;setStatus('Stopping after the current page finishes...')};
 
-async function renderPageAsImage(text, isUrdu){
-  if(isUrdu) await ensureUrduFont();
-  let W = 1240, H = 1754, margin = 90, maxW = W - margin*2;
-  let c = document.createElement('canvas'); c.width = W; c.height = H;
-  let ctx = c.getContext('2d');
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#111111';
-  
-  if(isUrdu){
-    ctx.direction = 'rtl'; ctx.textAlign = 'right';
-    ctx.font = '400 34px "Noto Nastaliq Urdu", serif';
-  } else {
-    ctx.direction = 'ltr'; ctx.textAlign = 'left';
-    ctx.font = '400 30px Georgia, serif';
+function isRtlLanguage(target){return /^(urdu|arabic|persian|hebrew|pashto)(\b|$)/i.test(target)}
+async function ensureFonts(){try{await document.fonts.ready}catch(e){}}
+async function renderTextPages(text,target){
+  await ensureFonts();
+  const W=1240,H=1754,margin=88,maxW=W-margin*2;
+  const rtl=isRtlLanguage(target);
+  const paragraphs=String(text).split(/\n/);
+  const pages=[];
+  let canvas,ctx,y,x;
+  function newPage(){
+    canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+    ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#171717';ctx.direction=rtl?'rtl':'ltr';ctx.textAlign=rtl?'right':'left';
+    ctx.font='30px "Noto Sans Arabic","Noto Sans",sans-serif';
+    x=rtl?W-margin:margin;y=105;
   }
-
-  let lineH = isUrdu ? 68 : 44, y = 110;
-  let paras = String(text).split(/\n+/);
-  for(let para of paras){
-    if(!para.trim()){ y += lineH * 0.6; continue; }
-    let words = para.replace(/\s+/g, ' ').trim().split(/\s+/);
-    let cur = '';
-    for(let w of words){
-      let test = cur ? cur + ' ' + w : w;
-      if(ctx.measureText(test).width <= maxW) cur = test;
-      else {
-        if(y > H - 80) break;
-        ctx.fillText(cur, isUrdu ? W - margin : margin, y);
-        y += lineH;
-        cur = w;
+  function savePage(){pages.push(canvas.toDataURL('image/png'))}
+  newPage();
+  const lineH=48;
+  for(const para of paragraphs){
+    if(!para.trim()){y+=22;continue}
+    const words=para.split(/\s+/);let line='';
+    for(const word of words){
+      const candidate=line?line+' '+word:word;
+      if(ctx.measureText(candidate).width>maxW&&line){
+        if(y>H-100){savePage();newPage()}
+        ctx.fillText(line,x,y);y+=lineH;line=word;
+      }else line=candidate;
+    }
+    if(line){
+      if(y>H-100){savePage();newPage()}
+      ctx.fillText(line,x,y);y+=lineH;
+    }
+    y+=12;
+  }
+  if(pages.length===0||y>105)savePage();
+  return pages;
+}
+$('makeBookBtn').onclick=async()=>{
+  if(busy)return;
+  if(!chapters.length)return alert('Add PDF files first.');
+  const mode=$('bookMode').value,target=$('targetLang').value.trim(),name=$('bookName').value.trim()||'Translated Book';
+  if(mode!=='original'&&chapters.some(ch=>ch.pages.some(p=>!p.translation)))return alert('Some pages are not translated yet. Translate all pages first.');
+  busy=true;$('makeBookBtn').disabled=true;$('bookStatus').textContent='Building PDF book...';
+  try{
+    const output=await PDFLib.PDFDocument.create();
+    const helv=await output.embedFont(PDFLib.StandardFonts.Helvetica);
+    for(const ch of chapters){
+      if(mode!=='translated'){
+        const original=await PDFLib.PDFDocument.load(ch.bytes);
+        const copied=await output.copyPages(original,original.getPageIndices());
+        copied.forEach(p=>output.addPage(p));
       }
-    }
-    if(cur && y <= H - 80){
-      ctx.fillText(cur, isUrdu ? W - margin : margin, y);
-      y += lineH;
-    }
-    y += 14;
-  }
-  return new Promise(res => c.toBlob(b => {
-    let r = new FileReader();
-    r.onload = () => res(r.result);
-    r.readAsDataURL(b);
-  }, 'image/png'));
-}
-
-async function makeBook(){
-  if(_busy) return alert('Process busy hai.');
-  if(!chapters.length) return alert('Chapters add karein');
-  if(!chapters.some(c => c.ocrDone)) return alert('Pehle OCR karein.');
-  
-  let target = document.getElementById('targetLang').value;
-  let mode = document.getElementById('bookMode').value;
-  let bookName = document.getElementById('bookName').value || 'Meri Book';
-  
-  _busy = true;
-  updateProgress('book', 0);
-  document.getElementById('status').textContent = 'Generating Book...';
-
-  try {
-    const merged = await PDFLib.PDFDocument.create();
-    const font = await merged.embedFont(PDFLib.StandardFonts.Helvetica);
-
-    // === COVER PAGE ===
-    let cover = merged.addPage([595, 842]);
-    let coverImgData = await renderPageAsImage(bookName, /[\u0600-\u06FF]/.test(bookName));
-    let res = await fetch(coverImgData);
-    let coverBuf = await res.arrayBuffer();
-    let coverImg = await merged.embedPng(coverBuf);
-    cover.drawImage(coverImg, {x: 0, y: 0, width: 595, height: 842});
-
-    let totalChapters = chapters.length;
-    for(let i = 0; i < chapters.length; i++){
-      let ch = chapters[i];
-      
-      // === CHAPTER DIVIDER PAGE ===
-      let div = merged.addPage([595, 842]);
-      let divText = "CHAPTER " + (i+1) + "\n\n" + ch.title;
-      let divImgData = await renderPageAsImage(divText, /[\u0600-\u06FF]/.test(divText));
-      let divRes = await fetch(divImgData);
-      let divBuf = await divRes.arrayBuffer();
-      let divImg = await merged.embedPng(divBuf);
-      div.drawImage(divImg, {x: 0, y: 0, width: 595, height: 842});
-
-      // === TRANSLATED PAGES ===
-      if(mode !== 'original'){
-        let pagesToWrite = ch.translatedPages || [];
-        for(let pi = 0; pi < pagesToWrite.length; pi++){
-          let raw = stripInvisible(pagesToWrite[pi] || '');
-          if(!raw.trim()) continue;
-
-          let isUrdu = (target === 'ur' || target === 'ar');
-          let dataUrl = await renderPageAsImage(raw, isUrdu);
-          let res = await fetch(dataUrl);
-          let buf = await res.arrayBuffer();
-          let img = await merged.embedPng(buf);
-          let pg = merged.addPage([595, 842]);
-          pg.drawImage(img, {x: 0, y: 0, width: 595, height: 842});
-          pg.drawText(String(pi+1), {x: 285, y: 20, size: 10, font});
+      if(mode!=='original'){
+        for(let pi=0;pi<ch.pages.length;pi++){
+          const text=ch.pages[pi].translation;
+          const translatedImages=await renderTextPages(text,target);
+          for(let ti=0;ti<translatedImages.length;ti++){
+            const image=await output.embedPng(translatedImages[ti]);
+            const page=output.addPage([595,842]);
+            page.drawImage(image,{x:0,y:0,width:595,height:842});
+            page.drawText(String(pi+1)+(translatedImages.length>1?'.'+(ti+1):''),{x:285,y:18,size:9,font:helv});
+          }
         }
       }
-
-      // === ORIGINAL PAGES ===
-      if(mode !== 'translated'){
-        let buf = await ch.file.arrayBuffer();
-        let src = await PDFLib.PDFDocument.load(buf);
-        let pages = await merged.copyPages(src, src.getPageIndices());
-        pages.forEach(p => merged.addPage(p));
-      }
-      updateProgress('book', ((i+1)/totalChapters) * 100);
     }
-
-    const bytes = await merged.save();
-    let url = URL.createObjectURL(new Blob([bytes], {type: 'application/pdf'}));
-    let safe = bookName.replace(/[^\w\- ]/g, '') || 'Meri Book';
-    
-    document.getElementById('downloadArea').innerHTML = 
-      '<a href="' + url + '" download="' + safe + '.pdf" class="block text-center bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-bold mt-3 shadow-md transition">⬇ Download ' + safe + '.pdf</a>';
-    
-    document.getElementById('status').textContent = '✅ Book Ready!';
-  } catch(e) {
-    document.getElementById('status').textContent = '❌ Error: ' + e.message;
-    console.error(e);
-  }
-  _busy = false;
-}
+    const bytes=await output.save();const url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+    const safe=name.replace(/[^\w\- ]/g,'').trim()||'Translated-Book';
+    $('downloadArea').innerHTML='';
+    const a=document.createElement('a');a.href=url;a.download=safe+'.pdf';a.textContent='⬇ Download '+safe+'.pdf';
+    a.className='block text-center bg-green-600 hover:bg-green-700 text-white rounded-lg p-3 font-bold mt-3';$('downloadArea').append(a);
+    $('bookStatus').textContent='PDF book created. Original pages are preserved when selected; translated pages are generated as readable text-page images.';
+  }catch(err){$('bookStatus').textContent='Book generation failed: '+err.message;alert(err.message)}
+  finally{busy=false;$('makeBookBtn').disabled=false}
+};
 </script>
 </body>
 </html>
